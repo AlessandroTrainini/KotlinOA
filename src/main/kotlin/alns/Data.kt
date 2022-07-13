@@ -13,6 +13,11 @@ class Data {
     private val categoryList: Array<ArrayList<Int>> = Array(instance.num_categories) { arrayListOf() }
     private val proxyCapacity = Array(instance.num_days) { instance.num_proxyRequests }
 
+    private val gOrder = ArrayList<Pair<Int, Int>>()
+    private val agRatioOrder = ArrayList<Pair<Int, Float>>()
+    private val tgRatioOrder = ArrayList<Pair<Int, Float>>()
+    private val dgRatioOrder = ArrayList<Pair<Int, Float>>()
+
     /**
      * In this method we create the map of the capacity for each activity, when we'll insert a request in "taken" we first
      * check whether the capacity of the activity in that day and in that timeslot is full or not
@@ -24,12 +29,23 @@ class Data {
         }
 
         instance.requests.forEach { r ->
+            gOrder.add(Pair(r.id, r.gain))
+            agRatioOrder.add(Pair(r.id, r.gain / r.penalty_A))
+            dgRatioOrder.add(Pair(r.id, r.gain / r.penalty_D))
+            tgRatioOrder.add(Pair(r.id, r.gain / r.penalty_T))
+
             if (r.proxy == 2)
                 takeMandatoryProxyRequest(r)
             else
                 missing.add(r.id)
         }
-        println(taken)
+
+        gOrder.sortByDescending { it.second }
+        agRatioOrder.sortByDescending { it.second }
+        dgRatioOrder.sortByDescending { it.second }
+        tgRatioOrder.sortByDescending { it.second }
+
+        print(dgRatioOrder)
     }
 
     private fun takeMandatoryProxyRequest(r: InstanceRequest) {
@@ -37,6 +53,8 @@ class Data {
         if (proxyCapacity[nr.day] > 0) {
             if (activityRoom[r.activity][r.day][r.timeslot] > 0) {
                 takeRequest(nr)
+            } else {
+
             }
         } else {
 
@@ -44,15 +62,11 @@ class Data {
     }
 
     private fun takeRequest(nr: Request, a: Int = nr.activity, d: Int = nr.day, t: Int = nr.time) {
-        if (nr.activity != a) {
-            nr.penalty_A = instance.getPenaltyAByRequest(nr.id)
-        }
-        if (nr.day != d) {
-
-        }
-        if (nr.time != t) {
-
-        }
+        if (nr.activity != a) nr.penalty_A = instance.getPenaltyAByRequest(nr.id).toInt()
+        if (nr.day != d) nr.penalty_D = instance.getPenaltyDByRequest(nr.id).toInt()
+        if (nr.time != t) nr.penalty_T = instance.getPenaltyAByRequest(nr.id).toInt()
+        taken.add(nr)
+        missing.remove(nr.id)
     }
 
 //    private fun takeRequest(r: InstanceRequest, p: Boolean) {

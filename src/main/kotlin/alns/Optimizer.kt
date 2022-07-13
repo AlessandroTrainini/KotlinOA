@@ -1,9 +1,6 @@
 package alns
 
-import alns.ins_rem_heuristics.InsertingHeuristic
-import alns.ins_rem_heuristics.RandomInsertion
-import alns.ins_rem_heuristics.RandomRemoval
-import alns.ins_rem_heuristics.RemovalHeuristic
+import alns.heuristics.*
 
 class Optimizer {
 
@@ -12,7 +9,9 @@ class Optimizer {
     fun runInstance() {
         val insertingHeuristic: InsertingHeuristic = RandomInsertion()
         val removalHeuristic: RemovalHeuristic = RandomRemoval()
+        val startingHeuristic: StartingHeuristic = FirstWithProxyStartingHeuristic()
 
+        startingHeuristic.generateStartingPoint(data)
         for (i in 0..10) {
             removalHeuristic.removeRequest(data)
             insertingHeuristic.insertRequest(data)

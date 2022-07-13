@@ -1,4 +1,4 @@
-package alns.ins_rem_heuristics
+package alns.heuristics
 
 import alns.Data
 import kotlin.random.Random
