@@ -1,17 +1,15 @@
-package ALNS
+package alns
 
-import Instance.FileParser
-import Instance.Instance
+import alns.ins_rem_heuristics.InsertingHeuristic
+import alns.ins_rem_heuristics.RandomInsertion
+import alns.ins_rem_heuristics.RandomRemoval
+import alns.ins_rem_heuristics.RemovalHeuristic
 
 class Optimizer {
 
-    private lateinit var instance: Instance
     private val data = Data()
 
     fun runInstance() {
-        val parser = FileParser("inst/istanza_prova.txt")
-        instance = parser.istance
-
         val insertingHeuristic: InsertingHeuristic = RandomInsertion()
         val removalHeuristic: RemovalHeuristic = RandomRemoval()
 
@@ -21,16 +19,15 @@ class Optimizer {
         }
         println(getObjectiveValue())
 
-
-
     }
 
-    private fun getObjectiveValue(): Int{
+    private fun getObjectiveValue(): Int {
         var value = 0
         data.taken.forEach {
-            value += instance.requests[it.id].gain
+            value += data.instance.requests[it.id].gain
         }
         return value
+
     }
 
 

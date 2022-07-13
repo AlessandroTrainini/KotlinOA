@@ -1,4 +1,4 @@
-import ALNS.Optimizer
+import alns.Optimizer
 
 fun main(args: Array<String>) {
     val optimizer = Optimizer()
