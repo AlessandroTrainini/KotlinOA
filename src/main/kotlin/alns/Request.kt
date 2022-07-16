@@ -11,3 +11,8 @@ data class Request(
     var penalty_D: Int = 0,
     var penalty_T: Int = 0
 )
+{
+    override fun toString(): String {
+        return instanceRequest.id.toString()
+    }
+}

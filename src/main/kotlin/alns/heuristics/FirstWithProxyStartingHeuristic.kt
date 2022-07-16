@@ -6,7 +6,7 @@ import alns.Request
 class FirstWithProxyStartingHeuristic: StartingHeuristic {
     override fun generateStartingPoint(data: Data) {
         for (r in data.instance.requests){
-            if (r.proxy == 2){
+            if (r.proxy >= 1){
                 val nr = Request(instanceRequest = r, true)
                 data.takeRequestTrusted(nr)
             }

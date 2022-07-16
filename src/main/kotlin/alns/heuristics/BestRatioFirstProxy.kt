@@ -10,6 +10,8 @@ class BestRatioFirstProxy: InsertingHeuristic {
         insertionList.clear()
         val candidates = data.gOrder.filter { it.first in data.missing }.toMutableList()
         while (insertionList.size < q) {
+            if (candidates.size < 1)
+                return insertionList
             val candidate = data.instance.getRequestById(candidates.first().first)
             candidates.removeAt(0) //pop
             val d = candidate.day
