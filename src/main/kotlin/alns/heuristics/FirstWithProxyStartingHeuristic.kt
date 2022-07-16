@@ -4,6 +4,7 @@ import alns.Data
 import alns.Request
 
 class FirstWithProxyStartingHeuristic: StartingHeuristic {
+
     override fun generateStartingPoint(data: Data) {
         for (r in data.instance.requests){
             if (r.proxy >= 1){
@@ -14,4 +15,5 @@ class FirstWithProxyStartingHeuristic: StartingHeuristic {
                 data.missing.add(r.id)
         }
     }
+
 }

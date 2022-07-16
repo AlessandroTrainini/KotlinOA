@@ -1,6 +1,7 @@
 package alns.heuristics
 
 import alns.Data
+import alns.Request
 
 interface InsertingHeuristic {
 

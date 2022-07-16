@@ -30,6 +30,7 @@ class Data {
     init {
         instance.activities.forEach { a ->
             activityRoom.add(Array(instance.num_days) { IntArray(instance.num_timeslots) { a.capacity } })
+            activityProxy.add(Array(instance.num_days) { IntArray(instance.num_timeslots) { 0 } })
             categoryList[a.category].add(a.id)
         }
 
@@ -60,12 +61,68 @@ class Data {
 //        }
 //    }
 
-    private fun takeRequest(nr: Request, a: Int = nr.activity, d: Int = nr.day, t: Int = nr.time) {
-        if (nr.activity != a) nr.penalty_A = instance.getPenaltyAByRequest(nr.id).toInt()
-        if (nr.day != d) nr.penalty_D = instance.getPenaltyDByRequest(nr.id).toInt()
-        if (nr.time != t) nr.penalty_T = instance.getPenaltyAByRequest(nr.id).toInt()
-        taken.add(nr)
-        missing.remove(nr.id)
+/*    fun takeRequest(r: Request, a: Int = r.activity, d: Int = r.day, t: Int = r.time): Boolean {
+
+        val activityCapacityOk = activityRoom[a][d][t] > 0
+
+        if (r.proxy) {
+            if (r.instanceRequest.proxy < 1) return false // Request can't be handled by a proxy
+
+            val proxyCanHandleOtherR = proxyCapacity[d] != 0
+            if (!proxyCanHandleOtherR) return false // Proxy is full of requests
+
+            val proxyAlreadyIn = activityProxy[a][d][t] != 0
+            if (!proxyAlreadyIn && !activityCapacityOk) return false // Proxy can't enter because activity is full of people
+
+            // Proxy can handle another request. a)"proxy is already inside" OR b)"proxy can go inside"
+            if (!proxyAlreadyIn) activityRoom[a][d][t] -= 1 // b) -> proxy takes up a seat
+            activityProxy[a][d][t] += 1
+            proxyCapacity[d] -= 1
+
+        } else {
+            if (!activityCapacityOk) return false // Activity is full of people
+            activityRoom[a][d][t] -= 1
+        }
+
+        r.activity = a
+        r.day = d
+        r.time = t
+
+        if (r.instanceRequest.activity != a) r.penalty_A = true
+        if (r.instanceRequest.day != d) r.penalty_D = true
+        if (r.instanceRequest.timeslot != t) r.penalty_T = true
+
+        missing.remove(r.instanceRequest.id)
+        taken.add(r)
+
+        return true
+    }*/
+
+    fun takeRequestTrusted(r: Request) {
+        taken.add(r)
+        missing.remove(r.instanceRequest.id)
+        if (r.proxy){
+            proxyCapacity[r.day] -= 1
+            if (activityProxy[r.activity][r.day][r.time] == 0)
+                activityRoom[r.activity][r.day][r.time] += 1
+            activityProxy[r.activity][r.day][r.time] += 1
+        }
+        else
+            activityRoom[r.activity][r.day][r.time] += 1
+    }
+
+    fun removeRequest(r: Request) : Boolean {
+        val r = taken.firstOrNull { it.instanceRequest.id == r.instanceRequest.id } ?: return false
+        if (r.proxy) {
+            activityProxy[r.activity][r.day][r.time] -= 1
+            if (activityProxy[r.activity][r.day][r.time] == 0) activityRoom[r.activity][r.day][r.time] += 1
+            proxyCapacity[r.time] += 1
+        } else {
+            activityRoom[r.activity][r.day][r.time] += 1
+        }
+        taken.remove(r)
+        missing.add(r.instanceRequest.id)
+        return true
     }
 
 //    private fun takeRequest(r: InstanceRequest) {

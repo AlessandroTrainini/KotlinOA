@@ -1,15 +1,16 @@
 package alns
 
+import Instance.InstanceRequest
+
 data class Request(
-    val id: Int,
-    var day: Int,
-    var time: Int,
-    var activity: Int,
-    var proxyMandatory: Int,
+    val instanceRequest: InstanceRequest,
     var proxy: Boolean,
-    var penalty_A: Int = 0,
-    var penalty_D: Int = 0,
-    var penalty_T: Int = 0
+    var day: Int = instanceRequest.day,
+    var time: Int = instanceRequest.timeslot,
+    var activity: Int = instanceRequest.activity,
+    var penalty_A: Boolean = false,
+    var penalty_D: Boolean = false,
+    var penalty_T: Boolean = false
 )
 {
     override fun toString(): String {
