@@ -12,7 +12,7 @@ class Data {
     val freeSeatsInActivity =
         arrayListOf<Array<IntArray>>() // The capacity of each activity, for each day, in each timeslot [a][d][t] -> capacity: Int
     val proxyRequestsInActivity =
-        arrayListOf<Array<IntArray>>() // How many requests are handeled by a proxy inside each activity in each day in each timeslot [a][d][t] -> presence: Int
+        arrayListOf<Array<IntArray>>() // How many requests are handled by a proxy inside each activity in each day in each timeslot [a][d][t] -> presence: Int
     val activitiesOfCategory: Array<ArrayList<Int>> = Array(instance.num_categories) { arrayListOf() }
     val proxyDailyCapacity = Array(instance.num_days) { instance.num_proxyRequests }
 
@@ -38,6 +38,7 @@ class Data {
             agRatioOrder.add(Pair(r.id, r.gain / r.penalty_A))
             dgRatioOrder.add(Pair(r.id, r.gain / r.penalty_D))
             tgRatioOrder.add(Pair(r.id, r.gain / r.penalty_T))
+            missing.add(r.id)
         }
 
         gOrder.sortByDescending { it.second }
@@ -47,7 +48,11 @@ class Data {
 
     }
 
-    fun takeNotTrustedRequest(r: Request, a: Int = r.activity, d: Int = r.day, t: Int = r.time): Pair<Boolean, Int> {
+    fun takeNotTrustedRequest(r: Request): Pair<Boolean, Int> {
+
+        val a = r.activity
+        val t = r.time
+        val d = r.day
 
         val activityCapacityOk = freeSeatsInActivity[a][d][t] > 0
 
@@ -70,10 +75,6 @@ class Data {
             freeSeatsInActivity[a][d][t] -= 1
         }
 
-        r.activity = a
-        r.day = d
-        r.time = t
-
         if (r.instanceRequest.activity != a) r.penalty_A = true
         if (r.instanceRequest.day != d) r.penalty_D = true
         if (r.instanceRequest.timeslot != t) r.penalty_T = true
@@ -84,7 +85,7 @@ class Data {
         return Pair(true, 0)
     }
 
-    fun takeRequestTrusted(r: Request) {
+    fun takeTrustedRequest(r: Request) {
         taken.add(r)
         missing.remove(r.instanceRequest.id)
         if (r.proxy) {

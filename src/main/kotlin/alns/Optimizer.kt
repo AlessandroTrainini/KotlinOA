@@ -5,14 +5,15 @@ import alns.heuristics.*
 class Optimizer {
 
     private val data = Data()
-    private val q = 3
+    private val q = 4
 
     fun runInstance() {
         val insertingHeuristic: InsertingHeuristic = BestRatioFirstProxy()
         val removalHeuristic: RemovalHeuristic = BestRatioRemoval()
         val startingHeuristic: StartingHeuristic = FirstWithProxyStartingHeuristic()
 
-        startingHeuristic.generateStartingPoint(data)
+        val starting = startingHeuristic.generateStartingPoint(data)
+        starting.forEach { data.takeTrustedRequest(it) }
 
         for (i in 0..20) {
             val toRemove = removalHeuristic.removeRequest(data, q)
@@ -21,7 +22,7 @@ class Optimizer {
             println("removing $toRemove")
 
             val toInsert = insertingHeuristic.insertRequest(data, q)
-            toInsert.forEach { data.takeRequestTrusted(it) }
+            toInsert.forEach { data.takeTrustedRequest(it) }
 
             println("inserting $toInsert")
 
