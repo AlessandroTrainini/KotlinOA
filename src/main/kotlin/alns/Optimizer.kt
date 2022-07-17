@@ -11,11 +11,12 @@ class Optimizer {
         val insertingHeuristic: InsertingHeuristic = BestRatioFirstProxy()
         val removalHeuristic: RemovalHeuristic = BestRatioRemoval()
         val startingHeuristic: StartingHeuristic = FirstWithProxyStartingHeuristic()
+        var objValue = 0
 
         val starting = startingHeuristic.generateStartingPoint(data)
         starting.forEach { data.takeTrustedRequest(it) }
 
-        for (i in 0..20) {
+        for (i in 0..11) {
             val toRemove = removalHeuristic.removeRequest(data, q)
             toRemove.forEach { data.removeRequest(it) }
 
@@ -26,13 +27,13 @@ class Optimizer {
 
             println("inserting $toInsert")
 
-//            if (getCurrentObjectiveValue() > objValue)
-//                objValue = getCurrentObjectiveValue()
-//            else{ // the obj value was better before, backtracking
-//                toInsert.forEach { data.removeRequest(it) }
-//                toRemove.forEach { data.takeRequestTrusted(it)
-//                println("backtracking")}
-//            }
+            if (getCurrentObjectiveValue() > objValue)
+                objValue = getCurrentObjectiveValue()
+            else{ // the obj value was better before, backtracking
+                toInsert.forEach { data.removeRequest(it) }
+                toRemove.forEach { data.takeTrustedRequest(it)
+                println("backtracking")}
+            }
         }
 
         println(getCurrentObjectiveValue())
