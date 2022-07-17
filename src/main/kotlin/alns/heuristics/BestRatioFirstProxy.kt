@@ -19,11 +19,11 @@ class BestRatioFirstProxy: InsertingHeuristic {
             val a = candidate.activity
             val proxy = candidate.proxy
             if (proxy >= 1) { //trying to give it to a proxy in order to save activity capacity
-                if (data.proxyCapacity[d] > 0) { //in that day, proxy can serve this request
-                    if (data.activityProxy[a][d][t] > 0)  //a proxy is already in that activity, we don't need to subtract capacity, we can just add the request
+                if (data.proxyDailyCapacity[d] > 0) { //in that day, proxy can serve this request
+                    if (data.proxyRequestsInActivity[a][d][t] > 0)  //a proxy is already in that activity, we don't need to subtract capacity, we can just add the request
                         insertionList.add(Request(candidate, proxy = true))
                     else{ //there is no proxy in the activity, check if there is enough space
-                        if (data.activityRoom[a][d][t] >= 1) //in this case there is enough space, and proxy can take the request
+                        if (data.freeSeatsInActivity[a][d][t] >= 1) //in this case there is enough space, and proxy can take the request
                             insertionList.add(Request(candidate, proxy = true))
                         else
                             trySomewhereElseWithProxy(candidate, data)
@@ -32,7 +32,7 @@ class BestRatioFirstProxy: InsertingHeuristic {
                 trySomewhereElseWithProxy(candidate, data)
             }
             else { //we can't use proxy
-                if (data.activityRoom[a][d][t] >= 1)  //in this case there is enough space, and proxy can take the request
+                if (data.freeSeatsInActivity[a][d][t] >= 1)  //in this case there is enough space, and proxy can take the request
                     insertionList.add(Request(candidate, proxy = true))
                 else
                     trySomewhereElseWithoutProxy(candidate, data)
@@ -42,7 +42,7 @@ class BestRatioFirstProxy: InsertingHeuristic {
     }
 
     private fun trySomewhereElseWithProxy(candidate: InstanceRequest, data: Data){
-        val activityList = data.categoryList[data.instance.getCategoryByActivity(candidate.activity)]
+        val activityList = data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)]
         activityList.remove(candidate.activity)
         activityList.add(0, candidate.activity)
 
@@ -57,11 +57,11 @@ class BestRatioFirstProxy: InsertingHeuristic {
         for (a in activityList)
             for (t in timeList)
                 for (d in dayList){
-                    if (data.proxyCapacity[d] > 0) { //found a day proxy are free in
-                        if (data.activityProxy[candidate.activity][d][candidate.timeslot] > 0) //a proxy is already in that activity, we don't need to subtract capacity, we can just add the request
+                    if (data.proxyDailyCapacity[d] > 0) { //found a day proxy are free in
+                        if (data.proxyRequestsInActivity[candidate.activity][d][candidate.timeslot] > 0) //a proxy is already in that activity, we don't need to subtract capacity, we can just add the request
                             insertionList.add(Request(candidate, proxy = true))
                         else{ //there is no proxy in the activity, check if there is enough space
-                            if (data.activityRoom[a][d][t] >= 1)  //in this case there is enough space, and proxy can take the request
+                            if (data.freeSeatsInActivity[a][d][t] >= 1)  //in this case there is enough space, and proxy can take the request
                                 insertionList.add(Request(candidate, proxy = true))
                         }
                     }
@@ -69,10 +69,10 @@ class BestRatioFirstProxy: InsertingHeuristic {
     }
 
     private fun trySomewhereElseWithoutProxy(candidate: InstanceRequest, data: Data){
-        for (a in data.categoryList[data.instance.getCategoryByActivity(candidate.activity)])
+        for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)])
             for (t in 0 until data.instance.num_timeslots)
                 for (d in 0 until data.instance.num_days)
-                    if (data.activityRoom[a][d][t] >= 1)  //in this case there is enough space, and proxy can take the request
+                    if (data.freeSeatsInActivity[a][d][t] >= 1)  //in this case there is enough space, and proxy can take the request
                         insertionList.add(Request(candidate, proxy = false))
     }
 }

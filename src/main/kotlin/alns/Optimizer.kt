@@ -14,8 +14,6 @@ class Optimizer {
 
         startingHeuristic.generateStartingPoint(data)
 
-        var objValue = 0
-
         for (i in 0..20) {
             val toRemove = removalHeuristic.removeRequest(data, q)
             toRemove.forEach { data.removeRequest(it) }
