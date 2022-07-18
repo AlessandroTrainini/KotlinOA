@@ -20,30 +20,30 @@ class Optimizer {
 
         println("starting objective value: ${getCurrentObjectiveValue()}")
 
-        for (i in 0..111) {
-            println("iteration n: $i")
-            val toRemove = removalHeuristic.removeRequest(data, q)
-            toRemove.forEach { data.removeRequest(it) }
-
-            println("removing $toRemove")
-
-            val toInsert = insertingHeuristic.insertRequest(data, q)
-            toInsert.forEach { data.takeTrustedRequest(it) }
-
-            println("inserting $toInsert")
-
-            if (getCurrentObjectiveValue() > objValue)
-                objValue = getCurrentObjectiveValue()
-            else { // the obj value was better before, backtracking
-                toInsert.forEach { data.removeRequest(it) }
-                toRemove.forEach { data.takeTrustedRequest(it) }
-                println("backtracking")
-
-            }
-
-            println(getCurrentObjectiveValue())
-            println(data.taken)
-        }
+//        for (i in 0..111) {
+//            println("iteration n: $i")
+//            val toRemove = removalHeuristic.removeRequest(data, q)
+//            toRemove.forEach { data.removeRequest(it) }
+//
+//            println("removing $toRemove")
+//
+//            val toInsert = insertingHeuristic.insertRequest(data, q)
+//            toInsert.forEach { data.takeTrustedRequest(it) }
+//
+//            println("inserting $toInsert")
+//
+//            if (getCurrentObjectiveValue() > objValue)
+//                objValue = getCurrentObjectiveValue()
+//            else { // the obj value was better before, backtracking
+//                toInsert.forEach { data.removeRequest(it) }
+//                toRemove.forEach { data.takeTrustedRequest(it) }
+//                println("backtracking")
+//
+//            }
+//
+//            println(getCurrentObjectiveValue())
+//            println(data.taken)
+//        }
     }
 
     private fun getCurrentObjectiveValue(): Float {

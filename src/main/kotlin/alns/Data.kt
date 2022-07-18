@@ -63,10 +63,8 @@ class Data {
             if (!proxyCanHandleOtherR) return Pair(false, 2) // Proxy is full of requests
 
             val proxyAlreadyIn = proxyRequestsInActivity[a][d][t] != 0
-            if (!proxyAlreadyIn && !activityCapacityOk) return Pair(
-                false,
-                3
-            ) // Proxy can't enter because activity is full of people
+            // Proxy can't enter because activity is full of people
+            if (!proxyAlreadyIn && !activityCapacityOk) return Pair(false, 3)
 
             // Proxy can handle another request. a)"proxy is already inside" OR b)"proxy can go inside"
             if (!proxyAlreadyIn) freeSeatsInActivity[a][d][t] -= 1 // b) -> proxy takes up a seat
