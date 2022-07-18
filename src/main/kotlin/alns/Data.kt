@@ -85,6 +85,8 @@ class Data {
         return Pair(true, 0)
     }
 
+
+
     fun takeTrustedRequest(r: Request) {
         taken.add(r)
         missing.remove(r.instanceRequest.id)

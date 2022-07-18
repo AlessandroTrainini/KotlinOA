@@ -1,8 +1,9 @@
-package alns.heuristics
+package alns.heuristics.inserting
 
 import Instance.InstanceRequest
 import alns.Data
 import alns.Request
+import alns.heuristics.InsertingHeuristic
 
 open class BestRatioFirstProxy: InsertingHeuristic {
     open val insertionList = arrayListOf<Request>()

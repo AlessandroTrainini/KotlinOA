@@ -1,7 +1,8 @@
-package alns.heuristics
+package alns.heuristics.inserting
 
 import alns.Data
 import alns.Request
+import alns.heuristics.InsertingHeuristic
 import kotlin.random.Random
 
 class RandomInsertion : InsertingHeuristic {

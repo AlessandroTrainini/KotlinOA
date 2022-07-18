@@ -2,7 +2,7 @@ package Instance;
 
 public class InstanceRequest {
     private int ID;
-    private int unit;
+    private int category;
     private int activity;
     private int day;
     private int timeslot;
@@ -13,9 +13,9 @@ public class InstanceRequest {
     private int proxy;
 
 
-    public InstanceRequest(int ID, int unit, int activity, int day, int timeslot, int gain, float penalty_A, float penalty_D, float penalty_T, int proxy) {
+    public InstanceRequest(int ID, int category, int activity, int day, int timeslot, int gain, float penalty_A, float penalty_D, float penalty_T, int proxy) {
         this.ID = ID;
-        this.unit = unit;
+        this.category = category;
         this.activity = activity;
         this.day = day;
         this.timeslot = timeslot;
@@ -59,12 +59,12 @@ public class InstanceRequest {
         this.ID = ID;
     }
 
-    public int getUnit() {
-        return unit;
+    public int getCategory() {
+        return category;
     }
 
-    public void setUnit(int unit) {
-        this.unit = unit;
+    public void setCategory(int category) {
+        this.category = category;
     }
 
     public int getActivity() {
@@ -109,7 +109,7 @@ public class InstanceRequest {
 
     @Override
     public String toString() {
-        return "Request{" + "ID=" + ID + ", unit=" + unit + ", activity=" + activity + ", day=" + day + ", timeslot=" + timeslot + ", gain=" + gain + ", penalty_A=" + penalty_A + ", penalty_D=" + penalty_D + ", penalty_T=" + penalty_T + ", proxy=" + proxy + '}';
+        return "Request{" + "ID=" + ID + ", category=" + category + ", activity=" + activity + ", day=" + day + ", timeslot=" + timeslot + ", gain=" + gain + ", penalty_A=" + penalty_A + ", penalty_D=" + penalty_D + ", penalty_T=" + penalty_T + ", proxy=" + proxy + '}';
     }
 
 

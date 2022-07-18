@@ -1,20 +1,22 @@
 package alns
 
 import alns.heuristics.*
+import alns.heuristics.inserting.BestRatioBestProxy
+import alns.heuristics.removal.BestRatioRemoval
+import alns.heuristics.starting.BestRatioStarting
 
 class Optimizer {
 
     private val data = Data()
-    private val q = 4
+    private val q = 1
 
     fun runInstance() {
-        val insertingHeuristic: InsertingHeuristic = BestRatioFirstProxy()
+        val insertingHeuristic: InsertingHeuristic = BestRatioBestProxy()
         val removalHeuristic: RemovalHeuristic = BestRatioRemoval()
-        val startingHeuristic: StartingHeuristic = FirstWithProxyStartingHeuristic()
-        var objValue = 0
+        val startingHeuristic: StartingHeuristic = BestRatioStarting()
+        var objValue = 0f
 
         val starting = startingHeuristic.generateStartingPoint(data)
-        starting.forEach { data.takeTrustedRequest(it) }
 
         for (i in 0..11) {
             println("iteration n: $i")
@@ -41,10 +43,13 @@ class Optimizer {
         println(data.taken)
     }
 
-    private fun getCurrentObjectiveValue(): Int {
-        var value = 0
+    private fun getCurrentObjectiveValue(): Float {
+        var value = 0f
         data.taken.forEach {
-            value += data.instance.requests[it.instanceRequest.id].gain
+            value += (it.instanceRequest.gain -
+                    it.penalty_A * it.instanceRequest.penalty_A -
+                    it.penalty_D * it.instanceRequest.penalty_D -
+                    it.penalty_T * it.instanceRequest.penalty_T )
         }
         return value
 

@@ -1,7 +1,8 @@
-package alns.heuristics
+package alns.heuristics.removal
 
 import alns.Data
 import alns.Request
+import alns.heuristics.RemovalHeuristic
 
 class BestRatioRemoval : RemovalHeuristic {
 
@@ -15,8 +16,8 @@ class BestRatioRemoval : RemovalHeuristic {
         return orderedTaken.subList(0, q)
     }
 
+    operator fun Boolean.times(penaltyA: Float): Float {
+        return if (this) penaltyA else 0.toFloat()
+    }
 }
 
-private operator fun Boolean.times(penaltyA: Float): Float {
-    return if (this) penaltyA else 0.toFloat()
-}
