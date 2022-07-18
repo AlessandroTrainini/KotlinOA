@@ -13,12 +13,9 @@ class BestStarting : StartingHeuristic {
 
         for (ir in data.instance.requests.sortedByDescending { it.gain }) {
             val r = Request(ir, false)
-
             this.data = data
             locate(r)
-
         }
-
     }
 
     private fun locate(r: Request) {
@@ -67,6 +64,7 @@ class BestStarting : StartingHeuristic {
             if (data.proxyDailyCapacity[d] > 0)
                 if (data.proxyRequestsInActivity[r.activity][d][r.time] > 0 || data.freeSeatsInActivity[r.activity][d][r.time] > 0) { //in this day there is already a proxy that can serve the activity, top
                     r.setDay(d)
+                    r.proxy = true
                     ok = data.takeNotTrustedRequest(r).first
                     break
                 }
