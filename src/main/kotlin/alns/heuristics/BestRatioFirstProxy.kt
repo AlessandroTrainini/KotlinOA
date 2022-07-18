@@ -4,8 +4,8 @@ import Instance.InstanceRequest
 import alns.Data
 import alns.Request
 
-class BestRatioFirstProxy: InsertingHeuristic {
-    private val insertionList = arrayListOf<Request>()
+open class BestRatioFirstProxy: InsertingHeuristic {
+    open val insertionList = arrayListOf<Request>()
     override fun insertRequest(data: Data, q: Int): MutableList<Request> {
         insertionList.clear()
         val candidates = data.gOrder.filter { it.first in data.missing }.toMutableList()
@@ -38,7 +38,7 @@ class BestRatioFirstProxy: InsertingHeuristic {
         return insertionList
     }
 
-    private fun trySomewhereElseWithProxy(candidate: InstanceRequest, data: Data){
+    open fun trySomewhereElseWithProxy(candidate: InstanceRequest, data: Data){
         val activityList = data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)]
         activityList.remove(candidate.activity)
         activityList.add(0, candidate.activity)
@@ -68,7 +68,7 @@ class BestRatioFirstProxy: InsertingHeuristic {
                     }
                 }
     }
-    private fun trySomewhereElseWithoutProxy(candidate: InstanceRequest, data: Data){
+    open fun trySomewhereElseWithoutProxy(candidate: InstanceRequest, data: Data){
         for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)])
             for (t in 0 until data.instance.num_timeslots)
                 for (d in 0 until data.instance.num_days)

@@ -17,6 +17,7 @@ class Optimizer {
         starting.forEach { data.takeTrustedRequest(it) }
 
         for (i in 0..11) {
+            println("iteration n: $i")
             val toRemove = removalHeuristic.removeRequest(data, q)
             toRemove.forEach { data.removeRequest(it) }
 
@@ -31,8 +32,8 @@ class Optimizer {
                 objValue = getCurrentObjectiveValue()
             else{ // the obj value was better before, backtracking
                 toInsert.forEach { data.removeRequest(it) }
-                toRemove.forEach { data.takeTrustedRequest(it)
-                println("backtracking")}
+                toRemove.forEach { data.takeTrustedRequest(it) }
+                println("backtracking")
             }
         }
 
