@@ -4,5 +4,7 @@ import alns.Data
 import alns.Request
 
 interface StartingHeuristic {
-    fun generateStartingPoint(data: Data): List<Request>
+
+    fun generateStartingPoint(data: Data)
+
 }

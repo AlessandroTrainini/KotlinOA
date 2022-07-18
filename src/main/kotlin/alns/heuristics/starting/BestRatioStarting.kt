@@ -25,6 +25,9 @@ class BestRatioStarting : StartingHeuristic {
 
                         else
 
+            } else {
+                if (data.freeSeatsInActivity[a][d][t] > 1)  //there is space for both the current request and a proxy
+                    data.takeTrustedRequest(Request(ir, false))
             }
         }
 

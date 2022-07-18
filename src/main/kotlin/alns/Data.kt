@@ -75,7 +75,10 @@ class Data {
             freeSeatsInActivity[a][d][t] -= 1
         }
 
-        if (r.instanceRequest.activity != a) r.penalty_A = true
+        if (r.instanceRequest.activity != a) {
+            if (instance.getCategoryByActivity(a) == instance.getCategoryByActivity(a))
+            r.penalty_A = true
+        }
         if (r.instanceRequest.day != d) r.penalty_D = true
         if (r.instanceRequest.timeslot != t) r.penalty_T = true
 
