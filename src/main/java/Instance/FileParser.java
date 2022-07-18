@@ -31,7 +31,7 @@ public class FileParser {
             line = br.readLine();
             nums = line.split(" ");
             a = Integer.parseInt(nums[0]); // id of the activity
-            c = Integer.parseInt(nums[1]); // id of the categiry
+            c = Integer.parseInt(nums[1]); // id of the category
             L = Integer.parseInt(nums[2]); // capacity of the activity
             istance.addActivity(a, c, L);
         }

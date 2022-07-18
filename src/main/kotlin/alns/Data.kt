@@ -63,7 +63,10 @@ class Data {
             if (!proxyCanHandleOtherR) return Pair(false, 2) // Proxy is full of requests
 
             val proxyAlreadyIn = proxyRequestsInActivity[a][d][t] != 0
-            if (!proxyAlreadyIn && !activityCapacityOk) return Pair(false, 3) // Proxy can't enter because activity is full of people
+            if (!proxyAlreadyIn && !activityCapacityOk) return Pair(
+                false,
+                3
+            ) // Proxy can't enter because activity is full of people
 
             // Proxy can handle another request. a)"proxy is already inside" OR b)"proxy can go inside"
             if (!proxyAlreadyIn) freeSeatsInActivity[a][d][t] -= 1 // b) -> proxy takes up a seat
@@ -75,12 +78,8 @@ class Data {
             freeSeatsInActivity[a][d][t] -= 1
         }
 
-        if (r.instanceRequest.activity != a) {
-            if (instance.getCategoryByActivity(a) == instance.getCategoryByActivity(a))
-            r.penalty_A = true
-        }
-        if (r.instanceRequest.day != d) r.penalty_D = true
-        if (r.instanceRequest.timeslot != t) r.penalty_T = true
+        val result = setPenalty(r)
+        if (!result.first) return result
 
         missing.remove(r.instanceRequest.id)
         taken.add(r)
@@ -88,11 +87,7 @@ class Data {
         return Pair(true, 0)
     }
 
-
-
     fun takeTrustedRequest(r: Request) {
-        taken.add(r)
-        missing.remove(r.instanceRequest.id)
         if (r.proxy) {
             proxyDailyCapacity[r.day] -= 1
             if (proxyRequestsInActivity[r.activity][r.day][r.time] == 0)
@@ -100,6 +95,28 @@ class Data {
             proxyRequestsInActivity[r.activity][r.day][r.time] += 1
         } else
             freeSeatsInActivity[r.activity][r.day][r.time] -= 1
+
+        setPenalty(r)
+
+        missing.remove(r.instanceRequest.id)
+        taken.add(r)
+    }
+
+    private fun setPenalty(r: Request): Pair<Boolean, Int> {
+
+        val a = r.activity
+        val t = r.time
+        val d = r.day
+
+        if (r.instanceRequest.activity != a) {
+            if (instance.getCategoryByActivity(a) != instance.getCategoryByActivity(r.instanceRequest.activity))
+                return Pair(false, 5) // Chosen activity of wrong category
+            r.penalty_A = true
+        }
+        if (r.instanceRequest.day != d) r.penalty_D = true
+        if (r.instanceRequest.timeslot != t) r.penalty_T = true
+
+        return Pair(true, 0)
     }
 
     fun removeRequest(r: Request): Boolean {
@@ -115,7 +132,6 @@ class Data {
         missing.add(r.instanceRequest.id)
         return true
     }
-
 
 
 //    fun tryToCollocateInTheFirst(r: InstanceRequest) {

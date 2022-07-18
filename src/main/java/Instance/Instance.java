@@ -22,8 +22,8 @@ public class Instance {
         this.num_categories = num_categories;
     }
 
-    public void addRequest(int ID, int category, int activity, int day, int timeslot, int gain, float penalty_A, float penalty_D, float penalty_T, int proxy) {
-        requests.add(new InstanceRequest(ID, category, activity, day, timeslot, gain, penalty_A, penalty_D, penalty_T, proxy));
+    public void addRequest(int ID, int unit, int activity, int day, int timeslot, int gain, float penalty_A, float penalty_D, float penalty_T, int proxy) {
+        requests.add(new InstanceRequest(ID, unit, activity, day, timeslot, gain, penalty_A, penalty_D, penalty_T, proxy));
     }
 
     public void addActivity(int ID, int category, int capacity) {
