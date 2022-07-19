@@ -122,7 +122,7 @@ class Data {
         if (r.proxy) {
             proxyRequestsInActivity[r.activity][r.day][r.time] -= 1
             if (proxyRequestsInActivity[r.activity][r.day][r.time] == 0) freeSeatsInActivity[r.activity][r.day][r.time] += 1
-            proxyDailyCapacity[r.time] += 1
+            proxyDailyCapacity[r.day] += 1
         } else {
             freeSeatsInActivity[r.activity][r.day][r.time] += 1
         }

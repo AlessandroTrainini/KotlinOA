@@ -44,6 +44,7 @@ class Optimizer {
 //            println(getCurrentObjectiveValue())
 //            println(data.taken)
 //        }
+        println(data.taken)
     }
 
     private fun getCurrentObjectiveValue(): Float {
@@ -52,7 +53,7 @@ class Optimizer {
             value += (it.instanceRequest.gain -
                     it.penalty_A * it.instanceRequest.penalty_A -
                     it.penalty_D * it.instanceRequest.penalty_D -
-                    it.penalty_T * it.instanceRequest.penalty_T )
+                    it.penalty_T * it.instanceRequest.penalty_T)
         }
         return value
 
@@ -60,6 +61,7 @@ class Optimizer {
 
 
 }
+
 operator fun Boolean.times(penaltyA: Float): Float {
     return if (this) penaltyA else 0.toFloat()
 }

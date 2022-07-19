@@ -14,11 +14,11 @@ class BestStarting : StartingHeuristic {
         for (ir in data.instance.requests.sortedByDescending { it.gain }) {
             val r = Request(ir, false)
             this.data = data
-            locate(r)
+            locateRequest(r)
         }
     }
 
-    private fun locate(r: Request) {
+    private fun locateRequest(r: Request) {
 
         val d = r.day
         val t = r.time
@@ -42,7 +42,7 @@ class BestStarting : StartingHeuristic {
                 findOrProxyOrGoodLocation(r)
             }
         } else { // Request can't be taken by a proxy
-            if (data.freeSeatsInActivity[a][d][t] > 1)  // there is space for both the current request and a proxy
+            if (data.freeSeatsInActivity[a][d][t] > 0)  // there is space for both the current request and a proxy
                 data.takeNotTrustedRequest(r)
             else { // There is no space
                 findGoodLocation(r)
@@ -55,24 +55,73 @@ class BestStarting : StartingHeuristic {
             findGoodLocation(r)
         } else {
             r.proxy = true
-            findProxyLocation(r)
+            var ok = findProxyLocation(r)
+            if (!ok) { // The exhaustive search failed -> replace this request with the first not mandatory
+                ok = replaceRequest(r)
+                if (!ok) error("Implossible problem!")
+            }
+            ok
         }
     }
 
+    // This function inserts proxy2_r in place of a replaceable request
+    private fun replaceRequest(proxy_r: Request): Boolean {
+        val possibilities = (0 until data.taken.size).shuffled().toList()
+        for (i in possibilities) {
+            val r = data.taken[i]
+            if (r.proxy && r.instanceRequest.proxy < 2 && data.activitiesOfCategory[data.instance.getCategoryByActivity(r.activity)].contains(proxy_r.activity)) {
+                data.removeRequest(r)
+                proxy_r.setActivity(r.activity)
+                proxy_r.setDay(r.day)
+                proxy_r.setTime(r.time)
+                val result = data.takeNotTrustedRequest(proxy_r)
+                return true
+            }
+        }
+        return false
+    }
+
+    // This function look for a good proxy request position:
+    // first tries to change the day
+    // If this first attempt is unsuccessful, it performs an exhaustive search in all possible a, d, t
     private fun findProxyLocation(r: Request): Boolean {
         var ok = false
-        for (d in (0 until data.instance.num_days).shuffled())
-            if (data.proxyDailyCapacity[d] > 0)
+        val suitableDays = mutableListOf<Int>()
+
+        for (d in (0 until data.instance.num_days).shuffled()) { // First try: only try to change the day
+            if (data.proxyDailyCapacity[d] > 0) {
                 if (data.proxyRequestsInActivity[r.activity][d][r.time] > 0 || data.freeSeatsInActivity[r.activity][d][r.time] > 0) { //in this day there is already a proxy that can serve the activity, top
                     r.setDay(d)
-                    val result = data.takeNotTrustedRequest(r)
-                    ok = result.first
-                    if (!ok) {
-                        setSuitableProxyADT(r)
-                    }
+                    ok = data.takeNotTrustedRequest(r).first
+                    if (ok) break
+                    suitableDays.add(d)
+                }
+            }
+        }
+
+        if (!ok) { // Second try: look for a seat in all the available space
+            for (d in suitableDays) {
+                ok = setSuitableProxyAT(r, d)
+                if (ok) break
+            }
+        }
+
+        return ok
+    }
+
+    private fun setSuitableProxyAT(r: Request, d: Int): Boolean {
+        var ok = false
+        val category = data.instance.getCategoryByActivity(r.instanceRequest.activity)
+        for (a in data.activitiesOfCategory[category].shuffled()) {
+            r.setActivity(a)
+            for (t in (0 until data.instance.num_timeslots).shuffled()) {
+                if (data.proxyRequestsInActivity[a][d][t] > 0 || data.freeSeatsInActivity[a][d][t] > 0) {
+                    r.setTime(t)
+                    ok = data.takeNotTrustedRequest(r).first
                     break
                 }
-
+            }
+        }
         return ok
     }
 
@@ -92,14 +141,6 @@ class BestStarting : StartingHeuristic {
                     break
                 }
         } else if (timeIndex > activityIndex && timeIndex > dayIndex) { //it's better to change the time
-            for (d in (0 until data.instance.num_days).shuffled())
-                if (data.freeSeatsInActivity[r.activity][d][r.time] > 0) {
-                    r.setDay(d)
-                    data.takeNotTrustedRequest(r)
-                    ok = true
-                    break
-                }
-        } else { //it's better to change the day
             for (t in (0 until data.instance.num_timeslots).shuffled())
                 if (data.freeSeatsInActivity[r.activity][r.day][t] > 0) {
                     r.setTime(t)
@@ -107,30 +148,17 @@ class BestStarting : StartingHeuristic {
                     ok = true
                     break
                 }
+        } else { //it's better to change the day
+            for (d in (0 until data.instance.num_days).shuffled())
+                if (data.freeSeatsInActivity[r.activity][d][r.time] > 0) {
+                    r.setDay(d)
+                    data.takeNotTrustedRequest(r)
+                    ok = true
+                    break
+                }
         }
 
         if (!ok) data.missing.add(r.instanceRequest.id)
-        return ok
-    }
-
-    private fun setSuitableProxyADT(r: Request): Boolean {
-        var ok = false
-        val category = data.instance.getCategoryByActivity(r.instanceRequest.activity)
-        for (d in (0 until data.instance.num_days).shuffled()) {
-            if (data.proxyDailyCapacity[d] > 0) {
-                r.setDay(d)
-                for (a in data.activitiesOfCategory[category].shuffled()) {
-                    r.setActivity(a)
-                    for (t in (0 until data.instance.num_timeslots)) {
-                        if (data.proxyRequestsInActivity[a][d][t] > 0 || data.freeSeatsInActivity[a][d][t] > 0) {
-                            r.setTime(t)
-                            ok = data.takeNotTrustedRequest(r).first
-                            break
-                        }
-                    }
-                }
-            }
-        }
         return ok
     }
 
