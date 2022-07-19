@@ -26,7 +26,6 @@ class BestInserting: InsertingHeuristic {
             val candidate = data.instance.getRequestById(candidates.first().first)
             candidates.removeAt(0) //pop
             val fingerprint = getRequestTaste(candidate)
-            println("${fingerprint[0]} - ${fingerprint[1]} - ${fingerprint[2]}")
             val nr = when {
                 fingerprint.contentEquals(ADT) -> adt(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
                 fingerprint.contentEquals(ATD) -> atd(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
