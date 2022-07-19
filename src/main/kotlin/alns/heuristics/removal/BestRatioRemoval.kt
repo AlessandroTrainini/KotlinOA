@@ -7,7 +7,7 @@ import alns.heuristics.RemovalHeuristic
 class BestRatioRemoval : RemovalHeuristic {
 
     override fun removeRequest(data: Data, q: Int): List<Request> {
-        val orderedTaken = data.taken.sortedBy {
+        val orderedTaken = data.taken.filter{it.instanceRequest.proxy != 2}.sortedBy {
             it.instanceRequest.gain -
                     it.penalty_A * it.instanceRequest.penalty_A -
                     it.penalty_D * it.instanceRequest.penalty_D -

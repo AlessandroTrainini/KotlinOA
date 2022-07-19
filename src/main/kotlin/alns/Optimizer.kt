@@ -1,6 +1,7 @@
 package alns
 
 import alns.heuristics.*
+import alns.heuristics.inserting.BestInserting
 import alns.heuristics.inserting.BestRatioBestProxy
 import alns.heuristics.removal.BestRatioRemoval
 import alns.heuristics.starting.BestStarting
@@ -8,42 +9,41 @@ import alns.heuristics.starting.BestStarting
 class Optimizer {
 
     private val data = Data()
-    private val q = 1
+    private val q = 5
 
     fun runInstance() {
-        val insertingHeuristic: InsertingHeuristic = BestRatioBestProxy()
+        val insertingHeuristic: InsertingHeuristic = BestInserting()
         val removalHeuristic: RemovalHeuristic = BestRatioRemoval()
         val startingHeuristic: StartingHeuristic = BestStarting()
-        var objValue = 0f
 
         startingHeuristic.generateStartingPoint(data)
+        var objValue = getCurrentObjectiveValue()
 
         println("starting objective value: ${getCurrentObjectiveValue()}")
 
-//        for (i in 0..111) {
-//            println("iteration n: $i")
-//            val toRemove = removalHeuristic.removeRequest(data, q)
-//            toRemove.forEach { data.removeRequest(it) }
-//
-//            println("removing $toRemove")
-//
-//            val toInsert = insertingHeuristic.insertRequest(data, q)
-//            toInsert.forEach { data.takeTrustedRequest(it) }
-//
-//            println("inserting $toInsert")
-//
-//            if (getCurrentObjectiveValue() > objValue)
-//                objValue = getCurrentObjectiveValue()
-//            else { // the obj value was better before, backtracking
-//                toInsert.forEach { data.removeRequest(it) }
-//                toRemove.forEach { data.takeTrustedRequest(it) }
-//                println("backtracking")
-//
-//            }
-//
-//            println(getCurrentObjectiveValue())
-//            println(data.taken)
-//        }
+        for (i in 0..10) {
+            println("iteration n: $i")
+            val toRemove = removalHeuristic.removeRequest(data, q)
+            toRemove.forEach { data.removeRequest(it) }
+
+            println("removing $toRemove")
+
+            val toInsert = insertingHeuristic.insertRequest(data, q)
+            toInsert.forEach { data.takeTrustedRequest(it) }
+
+            println("inserting $toInsert")
+
+            if (getCurrentObjectiveValue() > objValue)
+                objValue = getCurrentObjectiveValue()
+            else { // the obj value was better before, backtracking
+                toInsert.forEach { data.removeRequest(it) }
+                toRemove.forEach { data.takeTrustedRequest(it) }
+                println("backtracking")
+
+            }
+
+            println(getCurrentObjectiveValue())
+        }
         println(data.taken)
     }
 

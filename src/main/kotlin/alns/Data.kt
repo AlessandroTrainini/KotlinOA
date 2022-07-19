@@ -5,7 +5,7 @@ import Instance.Instance
 
 
 class Data {
-    val instance: Instance = FileParser("inst/istanza_giocattolo.txt").istance
+    val instance: Instance = FileParser("inst/istanza_prova.txt").istance
     val taken = arrayListOf<Request>() //requests that are in the current solution
     val missing = arrayListOf<Int>() //ids of requests that could be added at the current solution
 
@@ -117,8 +117,8 @@ class Data {
         return Pair(true, 0)
     }
 
-    fun removeRequest(r: Request): Boolean {
-        val r = taken.firstOrNull { it.instanceRequest.id == r.instanceRequest.id } ?: return false
+    fun removeRequest(toDelete: Request): Boolean {
+        val r = taken.firstOrNull { it.instanceRequest.id == toDelete.instanceRequest.id } ?: return false
         if (r.proxy) {
             proxyRequestsInActivity[r.activity][r.day][r.time] -= 1
             if (proxyRequestsInActivity[r.activity][r.day][r.time] == 0) freeSeatsInActivity[r.activity][r.day][r.time] += 1
