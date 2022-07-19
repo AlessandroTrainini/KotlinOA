@@ -11,7 +11,6 @@ val DAT = intArrayOf(1,0,2)
 val DTA = intArrayOf(1,2,0)
 val TAD = intArrayOf(2,0,1)
 val TDA = intArrayOf(2,1,0)
-val other = intArrayOf(2,1,0)
 
 class BestInserting: InsertingHeuristic {
 
@@ -27,6 +26,7 @@ class BestInserting: InsertingHeuristic {
             val candidate = data.instance.getRequestById(candidates.first().first)
             candidates.removeAt(0) //pop
             val fingerprint = getRequestTaste(candidate)
+            println("${fingerprint[0]} - ${fingerprint[1]} - ${fingerprint[2]}")
             val nr = when {
                 fingerprint.contentEquals(ADT) -> adt(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
                 fingerprint.contentEquals(ATD) -> atd(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
@@ -42,10 +42,6 @@ class BestInserting: InsertingHeuristic {
                 insertionList.add(nr)
         }
         return insertionList
-    }
-
-    private fun compare(a1: IntArray, a2: IntArray){
-        a1.forEach {  }
     }
 
     private fun getRequestTaste(r: InstanceRequest): IntArray {
@@ -192,7 +188,7 @@ class BestInserting: InsertingHeuristic {
         return null
     }
 
-    private fun getIndexesList(a: Int, t: Int, d:Int): Array<List<Int>> {
+    private fun getIndexesList(a: Int, d: Int, t:Int): Array<List<Int>> {
         val activityList = data.activitiesOfCategory[data.instance.getCategoryByActivity(a)]
         activityList.remove(a)
         activityList.add(0, a)
