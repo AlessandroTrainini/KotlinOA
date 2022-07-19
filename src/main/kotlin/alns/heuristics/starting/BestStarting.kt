@@ -58,7 +58,7 @@ class BestStarting : StartingHeuristic {
             var ok = findProxyLocation(r)
             if (!ok) { // The exhaustive search failed -> replace this request with the first not mandatory
                 ok = replaceRequest(r)
-                if (!ok) error("Implossible problem!")
+                if (!ok) print("Implossible problem!")
             }
             ok
         }
@@ -66,16 +66,19 @@ class BestStarting : StartingHeuristic {
 
     // This function inserts proxy2_r in place of a replaceable request
     private fun replaceRequest(proxy_r: Request): Boolean {
-        val possibilities = (0 until data.taken.size).shuffled().toList()
-        for (i in possibilities) {
+        for (i in (0 until data.taken.size).shuffled()) { // loop on taken requests
             val r = data.taken[i]
-            if (r.proxy && r.instanceRequest.proxy < 2 && data.activitiesOfCategory[data.instance.getCategoryByActivity(r.activity)].contains(proxy_r.activity)) {
-                data.removeRequest(r)
-                proxy_r.setActivity(r.activity)
-                proxy_r.setDay(r.day)
-                proxy_r.setTime(r.time)
-                val result = data.takeNotTrustedRequest(proxy_r)
-                return true
+            if (r.instanceRequest.proxy < 2 &&
+                data.activitiesOfCategory[data.instance.getCategoryByActivity(r.activity)].contains(proxy_r.activity)
+            ) { // not mandatory request & compatible r activity
+                if (r.proxy || data.proxyDailyCapacity[r.day] > 0) { // proxy_r has to be handled by a proxy. Either a request managed by a proxy is removed (space is freed), or a request is removed on a day when the proxy is not full
+                    data.removeRequest(r)
+                    proxy_r.setActivity(r.activity)
+                    proxy_r.setDay(r.day)
+                    proxy_r.setTime(r.time)
+                    data.takeNotTrustedRequest(proxy_r)
+                    return true
+                }
             }
         }
         return false
@@ -129,36 +132,59 @@ class BestStarting : StartingHeuristic {
         var ok = false
 
         val activityIndex = data.agRatioOrder.indexOfFirst { it.first == r.instanceRequest.id }
-        val timeIndex = data.tgRatioOrder.indexOfFirst { it.first == r.instanceRequest.id }
         val dayIndex = data.dgRatioOrder.indexOfFirst { it.first == r.instanceRequest.id }
+        val timeIndex = data.tgRatioOrder.indexOfFirst { it.first == r.instanceRequest.id }
 
-        if (activityIndex > timeIndex && activityIndex > dayIndex) { //it's better to change the activity
-            for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(r.instanceRequest.activity)].shuffled())
-                if (data.freeSeatsInActivity[a][r.day][r.time] > 0) {
-                    r.setActivity(a)
-                    data.takeNotTrustedRequest(r)
-                    ok = true
-                    break
-                }
-        } else if (timeIndex > activityIndex && timeIndex > dayIndex) { //it's better to change the time
-            for (t in (0 until data.instance.num_timeslots).shuffled())
-                if (data.freeSeatsInActivity[r.activity][r.day][t] > 0) {
-                    r.setTime(t)
-                    data.takeNotTrustedRequest(r)
-                    ok = true
-                    break
-                }
-        } else { //it's better to change the day
-            for (d in (0 until data.instance.num_days).shuffled())
-                if (data.freeSeatsInActivity[r.activity][d][r.time] > 0) {
-                    r.setDay(d)
-                    data.takeNotTrustedRequest(r)
-                    ok = true
-                    break
-                }
+        val funOrder = mutableListOf(
+            Pair(activityIndex) { request: Request -> findGoodLocationActivity(request) },
+            Pair(dayIndex) { request: Request -> findGoodLocationDay(request) },
+            Pair(timeIndex) { request: Request -> findGoodLocationTime(request) },
+        )
+
+        funOrder.sortByDescending { it.first }
+
+        for (fo in funOrder) {
+            ok = fo.second(r)
+            if (ok) break
         }
 
         if (!ok) data.missing.add(r.instanceRequest.id)
+        return ok
+    }
+
+    private fun findGoodLocationActivity(r: Request): Boolean {
+        var ok = false
+        for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(r.instanceRequest.activity)].shuffled())
+            if (data.freeSeatsInActivity[a][r.day][r.time] > 0) {
+                r.setActivity(a)
+                data.takeNotTrustedRequest(r)
+                ok = true
+                break
+            }
+        return ok
+    }
+
+    private fun findGoodLocationDay(r: Request): Boolean {
+        var ok = false
+        for (d in (0 until data.instance.num_days).shuffled())
+            if (data.freeSeatsInActivity[r.activity][d][r.time] > 0) {
+                r.setDay(d)
+                data.takeNotTrustedRequest(r)
+                ok = true
+                break
+            }
+        return ok
+    }
+
+    private fun findGoodLocationTime(r: Request): Boolean {
+        var ok = false
+        for (t in (0 until data.instance.num_timeslots).shuffled())
+            if (data.freeSeatsInActivity[r.activity][r.day][t] > 0) {
+                r.setTime(t)
+                data.takeNotTrustedRequest(r)
+                ok = true
+                break
+            }
         return ok
     }
 
