@@ -28,8 +28,8 @@ class HeuristicsWheel {
     init {
         addHeuristic(BestInserting(), W1)
         addHeuristic(BestRatioBestProxy(), W3)
-        addHeuristic(BestRatioFirstProxy(), 3f)
         addHeuristic(RandomInsertion(), 2f)
+        addHeuristic(BestRatioFirstProxy(), W1)
 
         addHeuristic(BestRatioRemoval(), W1)
         addHeuristic(RandomRemoval(), 2f)
@@ -52,19 +52,21 @@ class HeuristicsWheel {
 
     fun getBestInsHeuristic(): InsertingHeuristic {
         currentIns = insertingWeight.indexOf(insertingWeight.max())
+        println("Ins heuristic: ${insertingStorage[currentIns].javaClass.name}")
         return insertingStorage[currentIns]
     }
 
     fun getBestRemHeuristic(): RemovalHeuristic {
         currentRem = removalWeight.indexOf(removalWeight.max())
+        println("Rem heuristic: ${removalStorage[currentRem].javaClass.name}")
         return removalStorage[currentRem]
     }
 
     fun getInsHeuristic(): InsertingHeuristic {
         val index = getMostPromisingIndex(insertingWeight)
         if (index != currentIns) {
-            println("Ins heuristic changed")
             currentIns = index
+            println("Ins heuristic: ${insertingStorage[currentIns].javaClass.name}")
         }
         return insertingStorage[currentIns]
     }
@@ -72,8 +74,8 @@ class HeuristicsWheel {
     fun getRemHeuristic(): RemovalHeuristic {
         val index = getMostPromisingIndex(removalWeight)
         if (index != currentRem) {
-            println("Rem heuristic changed")
             currentRem = index
+            println("Rem heuristic: ${removalStorage[currentRem].javaClass.name}")
         }
         return removalStorage[currentRem]
     }
