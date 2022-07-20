@@ -40,8 +40,8 @@ class BestInserting: InsertingHeuristic {
                 }
             }
             if (nr != null) {
-                data.takeTrustedRequest(nr)
                 insertionList.add(nr)
+                data.takeTrustedRequest(nr)
             }
         }
         return insertionList

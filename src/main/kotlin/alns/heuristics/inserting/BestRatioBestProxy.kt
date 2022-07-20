@@ -30,8 +30,10 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
                 ?: tryAnotherActivityWithProxy(Request(candidate, proxy = true))
                 ?: tryAnotherTimeWithProxy(Request(candidate, proxy = true))
         }
-        if (r != null)
+        if (r != null) {
             insertionList.add(r)
+            data.takeTrustedRequest(r)
+        }
         else if (candidate.proxy != 2)
             trySomewhereElseWithoutProxy(candidate, data)
     }

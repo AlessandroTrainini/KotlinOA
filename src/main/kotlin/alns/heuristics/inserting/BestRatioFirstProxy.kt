@@ -21,17 +21,23 @@ open class BestRatioFirstProxy: InsertingHeuristic {
             val proxy = candidate.proxy
             if (proxy >= 1) { //trying to give it to a proxy in order to save activity capacity
                 if (data.proxyDailyCapacity[d] > 0) //in that day, proxy can serve this request
-                    if (data.proxyRequestsInActivity[a][d][t] > 0)  //a proxy is already in that activity, we don't need to subtract capacity, we can just add the request
+                    if (data.proxyRequestsInActivity[a][d][t] > 0) {  //a proxy is already in that activity, we don't need to subtract capacity, we can just add the request
                         insertionList.add(Request(candidate, proxy = true))
+                        data.takeTrustedRequest(Request(candidate, activity = a, time = t, day = d, proxy = true))
+                    }
                     else //there is no proxy in the activity, check if there is enough space
-                        if (data.freeSeatsInActivity[a][d][t] >= 1) //in this case there is enough space, and proxy can take the request
+                        if (data.freeSeatsInActivity[a][d][t] >= 1) { //in this case there is enough space, and proxy can take the request
                             insertionList.add(Request(candidate, proxy = true))
+                            data.takeTrustedRequest(Request(candidate, activity = a, time = t, day = d, proxy = true))
+                        }
                         else trySomewhereElseWithProxy(candidate, data)
                 else trySomewhereElseWithProxy(candidate, data)
             }
             else { //we can't use proxy
-                if (data.freeSeatsInActivity[a][d][t] >= 1)  //in this case there is enough space, and proxy can take the request
+                if (data.freeSeatsInActivity[a][d][t] >= 1) {  //in this case there is enough space, and proxy can take the request
                     insertionList.add(Request(candidate, proxy = true))
+                    data.takeTrustedRequest(Request(candidate, activity = a, time = t, day = d, proxy = true))
+                }
                 else
                     trySomewhereElseWithoutProxy(candidate, data)
             }
@@ -58,11 +64,13 @@ open class BestRatioFirstProxy: InsertingHeuristic {
                     if (data.proxyDailyCapacity[d] > 0) { //found a day proxy are free in
                         if (data.proxyRequestsInActivity[candidate.activity][d][candidate.timeslot] > 0) { //a proxy is already in that activity, we don't need to subtract capacity, we can just add the request
                             insertionList.add(Request(candidate, activity = a, time = t, day = d, proxy = true))
+                            data.takeTrustedRequest(Request(candidate, activity = a, time = t, day = d, proxy = true))
                             return
                         }
                         else{ //there is no proxy in the activity, check if there is enough space
                             if (data.freeSeatsInActivity[a][d][t] >= 1){  //in this case there is enough space, and proxy can take the request
                                 insertionList.add(Request(candidate, activity = a, time = t, day = d, proxy = true))
+                                data.takeTrustedRequest(Request(candidate, activity = a, time = t, day = d, proxy = true))
                                 return
                             }
                         }
@@ -76,7 +84,8 @@ open class BestRatioFirstProxy: InsertingHeuristic {
             for (t in 0 until data.instance.num_timeslots)
                 for (d in 0 until data.instance.num_days)
                     if (data.freeSeatsInActivity[a][d][t] >= 1) {  //in this case there is enough space, and proxy can take the request
-                        insertionList.add(Request(candidate, activity = a, time = t, day = d, proxy = true))
+                        insertionList.add(Request(candidate, activity = a, time = t, day = d, proxy = false))
+                        data.takeTrustedRequest(Request(candidate, activity = a, time = t, day = d, proxy = false))
                         return
                     }
     }
