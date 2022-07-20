@@ -5,7 +5,7 @@ import Instance.Instance
 
 
 class Data {
-    val instance: Instance = FileParser("inst/OTSP1.txt").istance
+    val instance: Instance = FileParser("inst/istanza_prova.txt").istance
     val taken = arrayListOf<Request>() //requests that are in the current solution
     val missing = arrayListOf<Int>() //ids of requests that could be added at the current solution
 

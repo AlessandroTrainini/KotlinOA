@@ -28,11 +28,11 @@ class HeuristicsWheel {
     init {
         addHeuristic(BestInserting(), W1)
         addHeuristic(BestRatioBestProxy(), W3)
-        addHeuristic(RandomInsertion(), 2f)
+        //addHeuristic(RandomInsertion(), 2f)
         addHeuristic(BestRatioFirstProxy(), W1)
 
         addHeuristic(BestRatioRemoval(), W1)
-        addHeuristic(RandomRemoval(), 2f)
+        addHeuristic(RandomRemoval(), W2)
     }
 
     private fun addHeuristic(h: Any, weight: Float) {
@@ -83,7 +83,7 @@ class HeuristicsWheel {
     private fun getMostPromisingIndex(weightList: MutableList<Float>): Int {
         val tot = weightList.sum()
         val distribution = mutableListOf<Int>()
-        for (i in (0 until  weightList.size)) {
+        for (i in (0 until weightList.size)) {
             val p = floor(weightList[i] / tot * 100).toInt()
             for (j in 0 until p) distribution.add(i)
         }

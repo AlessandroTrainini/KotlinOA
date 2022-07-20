@@ -2,6 +2,7 @@ package alns
 
 import alns.heuristics.*
 import alns.heuristics.starting.BestStarting
+import tools.ProgressBar
 
 class Optimizer {
 
@@ -28,25 +29,16 @@ class Optimizer {
         var insertingHeuristic: InsertingHeuristic = heuristicsWheel.getBestInsHeuristic()
         var removalHeuristic: RemovalHeuristic = heuristicsWheel.getBestRemHeuristic()
 
-        for (i in 1..maxIterNum) {
+        for (i in 1 until maxIterNum) {
             println("Segment n° $i")
 
-            for (j in 0..segmentSize) { // Segment
+            val progressBar = ProgressBar(segmentSize)
+            for (j in 0 until segmentSize) { // Segment
+                progressBar.updateProgressBar()
                 val toRemove = removalHeuristic.removeRequest(data, qRemove)
                 toRemove.forEach { data.removeRequest(it) }
 
-                val toInsert = mutableListOf<Request>()
-                var k = 0
-                while (k < qInsert) {
-                    val rList = insertingHeuristic.insertRequest(data, 1)
-                    if (rList.isEmpty()) break
-                    else {
-                        data.takeTrustedRequest(rList.first())
-                        toInsert.add(rList.first())
-                    }
-                    k++
-                }
-
+                val toInsert = insertingHeuristic.insertRequest(data, qInsert)
 
                 val heuristicWeight: Float
                 val newObjValue = getCurrentObjectiveValue()
@@ -74,6 +66,8 @@ class Optimizer {
             insertingHeuristic = heuristicsWheel.getInsHeuristic()
             removalHeuristic = heuristicsWheel.getRemHeuristic()
         }
+
+        println(data.taken)
     }
 
     private fun getCurrentObjectiveValue(): Float {
