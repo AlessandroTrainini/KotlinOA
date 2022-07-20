@@ -3,13 +3,15 @@ package alns
 import alns.heuristics.*
 import alns.heuristics.inserting.BestInserting
 import alns.heuristics.inserting.BestRatioBestProxy
+import alns.heuristics.inserting.BestRatioFirstProxy
 import alns.heuristics.removal.BestRatioRemoval
 import alns.heuristics.starting.BestStarting
 
 class Optimizer {
 
     private val data = Data()
-    private val q = 5
+    private val q = 30
+    private val verbose = true
 
     fun runInstance() {
         val insertingHeuristic: InsertingHeuristic = BestInserting()
@@ -25,14 +27,20 @@ class Optimizer {
             val toRemove = removalHeuristic.removeRequest(data, q)
             toRemove.forEach { data.removeRequest(it) }
 
-            val toInsert = insertingHeuristic.insertRequest(data, q)
+            if (verbose) println(toRemove)
+
+            val toInsert = insertingHeuristic.insertRequest(data, 100)
             toInsert.forEach { data.takeTrustedRequest(it) }
+
+            if (verbose) println(toInsert)
+            if (verbose) println(getCurrentObjectiveValue())
 
             if (getCurrentObjectiveValue() > objValue)
                 objValue = getCurrentObjectiveValue()
             else { // the obj value was better before, backtracking
                 toInsert.forEach { data.removeRequest(it) }
                 toRemove.forEach { data.takeTrustedRequest(it) }
+                if (verbose) println("backtracking")
             }
 
         }

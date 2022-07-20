@@ -5,14 +5,16 @@ import alns.Data
 import alns.Request
 import alns.heuristics.InsertingHeuristic
 
-val ADT = intArrayOf(0,1,2)
-val ATD = intArrayOf(0,2,1)
-val DAT = intArrayOf(1,0,2)
-val DTA = intArrayOf(1,2,0)
-val TAD = intArrayOf(2,0,1)
-val TDA = intArrayOf(2,1,0)
+
 
 class BestInserting: InsertingHeuristic {
+
+    private val ADT = intArrayOf(0,1,2)
+    private val ATD = intArrayOf(0,2,1)
+    private val DAT = intArrayOf(1,0,2)
+    private val DTA = intArrayOf(1,2,0)
+    private val TAD = intArrayOf(2,0,1)
+    private val TDA = intArrayOf(2,1,0)
 
     private lateinit var data: Data
 
@@ -21,7 +23,7 @@ class BestInserting: InsertingHeuristic {
         val insertionList = mutableListOf<Request>()
         val candidates = data.gOrder.filter { it.first in data.missing }.toMutableList()
         while (insertionList.size < q) {
-            if (candidates.size < 1)
+            if (candidates.size == 0)
                 return insertionList
             val candidate = data.instance.getRequestById(candidates.first().first)
             candidates.removeAt(0) //pop

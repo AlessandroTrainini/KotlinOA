@@ -32,10 +32,8 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
         }
         if (r != null)
             insertionList.add(r)
-    }
-
-    override fun trySomewhereElseWithoutProxy(candidate: InstanceRequest, data: Data) {
-
+        else if (candidate.proxy != 2)
+            trySomewhereElseWithoutProxy(candidate, data)
     }
 
     private fun tryAnotherActivityWithProxy(r: Request): Request? {
@@ -66,7 +64,6 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
                     r.setDay(d)
                     return r
                 }
-
             }
         }
         return null

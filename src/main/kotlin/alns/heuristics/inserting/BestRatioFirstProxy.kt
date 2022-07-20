@@ -68,6 +68,8 @@ open class BestRatioFirstProxy: InsertingHeuristic {
                         }
                     }
                 }
+        if (candidate.proxy != 2)
+            trySomewhereElseWithoutProxy(candidate, data)
     }
     open fun trySomewhereElseWithoutProxy(candidate: InstanceRequest, data: Data){
         for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)])

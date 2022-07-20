@@ -16,9 +16,11 @@ class BestRatioRemoval : RemovalHeuristic {
         return orderedTaken.subList(0, q)
     }
 
+    operator fun Boolean.times(penaltyA: Float): Float {
+        return if (this) penaltyA else 0.toFloat()
+    }
+
 }
 
-operator fun Boolean.times(penaltyA: Float): Float {
-    return if (this) penaltyA else 0.toFloat()
-}
+
 
