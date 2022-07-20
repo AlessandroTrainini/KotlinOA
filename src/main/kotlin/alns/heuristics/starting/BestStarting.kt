@@ -3,6 +3,7 @@ package alns.heuristics.starting
 import alns.Data
 import alns.Request
 import alns.heuristics.StartingHeuristic
+import tools.ProgressBar
 
 class BestStarting : StartingHeuristic {
 
@@ -10,11 +11,12 @@ class BestStarting : StartingHeuristic {
 
 
     override fun generateStartingPoint(data: Data) {
-
+        val progressBar = ProgressBar(data.instance.requests.size)
         for (ir in data.instance.requests.sortedByDescending { it.gain }) {
             val r = Request(ir, false)
             this.data = data
             locateRequest(r)
+            progressBar.updateProgressBar()
         }
     }
 
@@ -58,7 +60,7 @@ class BestStarting : StartingHeuristic {
             var ok = findProxyLocation(r)
             if (!ok) { // The exhaustive search failed -> replace this request with the first not mandatory
                 ok = replaceRequest(r)
-                if (!ok) print("Implossible problem!")
+                if (!ok) error("Implossible problem!")
             }
             ok
         }

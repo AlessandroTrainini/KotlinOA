@@ -2,49 +2,66 @@ package alns
 
 import alns.heuristics.*
 import alns.heuristics.inserting.BestInserting
-import alns.heuristics.inserting.BestRatioBestProxy
-import alns.heuristics.inserting.BestRatioFirstProxy
 import alns.heuristics.removal.BestRatioRemoval
 import alns.heuristics.starting.BestStarting
+import kotlin.math.exp
 
 class Optimizer {
 
     private val data = Data()
-    private val q = 30
-    private val verbose = true
+    private val q = 5
+    private val segmentSize = 100
+    private val maxIterNum = 10
+
+    private var t = 1
+
+    private var currentObjValue: Float = 0f
+    private var maxObjValue: Float = 0f
 
     fun runInstance() {
-        val insertingHeuristic: InsertingHeuristic = BestInserting()
-        val removalHeuristic: RemovalHeuristic = BestRatioRemoval()
         val startingHeuristic: StartingHeuristic = BestStarting()
 
+        println("Generation of a good starting point")
         startingHeuristic.generateStartingPoint(data)
-        var objValue = getCurrentObjectiveValue()
+        currentObjValue = getCurrentObjectiveValue()
+        println("Starting point generated with objective value: ${getCurrentObjectiveValue()}")
 
-        println("starting objective value: ${getCurrentObjectiveValue()}")
+        val heuristicsWheel = HeuristicsWheel()
+        var insertingHeuristic: InsertingHeuristic = heuristicsWheel.getBestInsHeuristic()
+        var removalHeuristic: RemovalHeuristic = heuristicsWheel.getBestRemHeuristic()
 
-        for (i in 0..100) {
-            val toRemove = removalHeuristic.removeRequest(data, q)
-            toRemove.forEach { data.removeRequest(it) }
+        for (i in 1..maxIterNum) {
+            println("Segment n° $i")
 
-            if (verbose) println(toRemove)
+            for (j in 0..segmentSize) { // Segment
+                val toRemove = removalHeuristic.removeRequest(data, q)
+                toRemove.forEach { data.removeRequest(it) }
 
-            val toInsert = insertingHeuristic.insertRequest(data, 100)
-            toInsert.forEach { data.takeTrustedRequest(it) }
+                val toInsert = insertingHeuristic.insertRequest(data, q)
+                toInsert.forEach { data.takeNotTrustedRequest(it) }
 
-            if (verbose) println(toInsert)
-            if (verbose) println(getCurrentObjectiveValue())
-
-            if (getCurrentObjectiveValue() > objValue)
-                objValue = getCurrentObjectiveValue()
-            else { // the obj value was better before, backtracking
-                toInsert.forEach { data.removeRequest(it) }
-                toRemove.forEach { data.takeTrustedRequest(it) }
-                if (verbose) println("backtracking")
+                val newObjValue = getCurrentObjectiveValue()
+                if (newObjValue > currentObjValue) {
+                    currentObjValue = newObjValue
+                    if (currentObjValue > maxObjValue) {
+                        maxObjValue = currentObjValue
+                        heuristicsWheel.updateWeight(heuristicsWheel.W1)
+                    } else {
+                        heuristicsWheel.updateWeight(heuristicsWheel.W2)
+                    }
+                } else { // the obj value was better before, backtracking
+                    toInsert.forEach { data.removeRequest(it) }
+                    toRemove.forEach { data.takeNotTrustedRequest(it) }
+                    heuristicsWheel.updateWeight(heuristicsWheel.W4)
+                }
+                t += 10
             }
 
+            println("End segment n° $i objective value: ${getCurrentObjectiveValue()}")
+
+            insertingHeuristic = heuristicsWheel.getInsHeuristic()
+            removalHeuristic = heuristicsWheel.getRemHeuristic()
         }
-        println(getCurrentObjectiveValue())
     }
 
     private fun getCurrentObjectiveValue(): Float {
@@ -56,7 +73,19 @@ class Optimizer {
                     it.penalty_T * it.instanceRequest.penalty_T)
         }
         return value
+    }
 
+    private fun acceptNewSol(newObjValue: Float): Boolean {
+        val objValuesDifference = newObjValue - currentObjValue
+        if (objValuesDifference < 0) {
+            println("Absolute difference: $objValuesDifference")
+            val exponent = -1 * objValuesDifference / t
+            println("Exponent: $exponent")
+            val exponential = exp(exponent)
+            println("Exponential: $exponential")
+        }
+
+        return false
     }
 
 
