@@ -88,9 +88,8 @@ class Optimizer {
         return false
     }
 
-
+    operator fun Boolean.times(penaltyA: Float): Float {
+        return if (this) penaltyA else 0.toFloat()
+    }
 }
 
-operator fun Boolean.times(penaltyA: Float): Float {
-    return if (this) penaltyA else 0.toFloat()
-}
