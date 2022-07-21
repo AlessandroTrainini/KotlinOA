@@ -3,19 +3,20 @@ package alns
 import alns.heuristics.*
 import alns.heuristics.starting.BestStarting
 import tools.ProgressBar
+import java.io.File
 
 class Optimizer {
 
     private val data = Data()
-    private val qInsert = 50
-    private val qRemove = 30
+    private val qInsert = 1
+    private val qRemove = 10
     private val segmentSize = 100
     private val maxIterNum = 10
 
     private var t = 0
 
-    private var currentObjValue: Float = 0f
-    private var maxObjValue: Float = 0f
+    private var currentObjValue: Double = 0.toDouble()
+    private var maxObjValue: Double = 0.toDouble()
 
     fun runInstance() {
         val startingHeuristic: StartingHeuristic = BestStarting()
@@ -23,7 +24,7 @@ class Optimizer {
         println("Generation of a good starting point")
         startingHeuristic.generateStartingPoint(data)
         currentObjValue = getCurrentObjectiveValue()
-        println("Starting point generated with objective value: ${getCurrentObjectiveValue()}")
+        println("Starting point generated with objective value: ${getCurrentObjectiveValue()}\n")
 
         val heuristicsWheel = HeuristicsWheel()
         var insertingHeuristic: InsertingHeuristic = heuristicsWheel.getBestInsHeuristic()
@@ -35,6 +36,7 @@ class Optimizer {
             val progressBar = ProgressBar(segmentSize)
             for (j in 0 until segmentSize) { // Segment
                 progressBar.updateProgressBar()
+
                 val toRemove = removalHeuristic.removeRequest(data, qRemove)
                 toRemove.forEach { data.removeRequest(it) }
 
@@ -43,12 +45,13 @@ class Optimizer {
                 val heuristicWeight: Float
                 val newObjValue = getCurrentObjectiveValue()
                 if (newObjValue > currentObjValue) { // Found a better solution
-                    if (currentObjValue > maxObjValue) { // Found the best solution so far
-                        maxObjValue = currentObjValue
+                    currentObjValue = newObjValue
+                    if (newObjValue > maxObjValue) { // Found the best solution so far
+                        maxObjValue = newObjValue
                         heuristicWeight = heuristicsWheel.W1
                     } else heuristicWeight = heuristicsWheel.W2 // Found better solution
                 } else { // the obj value was better before
-                    if (simulatedAnnealing(newObjValue)) {
+                    if (false) {
                         currentObjValue = newObjValue
                         heuristicWeight = heuristicsWheel.W3
                     } else { // backtracking
@@ -61,7 +64,7 @@ class Optimizer {
                 t += 10
             }
 
-            println("End segment n° $i objective value: ${getCurrentObjectiveValue()}")
+            println("End segment n° $i objective value: ${getCurrentObjectiveValue()}\n")
 
             insertingHeuristic = heuristicsWheel.getInsHeuristic()
             removalHeuristic = heuristicsWheel.getRemHeuristic()
@@ -70,9 +73,9 @@ class Optimizer {
         println(data.taken)
     }
 
-    private fun getCurrentObjectiveValue(): Float {
-        var value = 0f
-        data.taken.forEach {
+    private fun getCurrentObjectiveValue(): Double {
+        var value: Double = 0.toDouble()
+        data.taken.shuffled().forEach {
             value += (it.instanceRequest.gain -
                     it.penalty_A * it.instanceRequest.penalty_A -
                     it.penalty_D * it.instanceRequest.penalty_D -
@@ -93,8 +96,8 @@ class Optimizer {
         return false
     }
 
-    operator fun Boolean.times(penaltyA: Float): Float {
-        return if (this) penaltyA else 0.toFloat()
+    operator fun Boolean.times(penaltyA: Double): Double {
+        return if (this) penaltyA else 0.toDouble()
     }
 }
 

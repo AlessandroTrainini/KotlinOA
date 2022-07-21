@@ -14,7 +14,7 @@ data class Request(
 )
 {
     override fun toString(): String {
-        return instanceRequest.id.toString()
+        return "${instanceRequest.id} - $day - $time - $activity - $penalty_A - $penalty_D - $penalty_T - $proxy"
     }
 
     @JvmName("setActivity1")

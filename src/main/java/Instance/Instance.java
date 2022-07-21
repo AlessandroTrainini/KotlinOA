@@ -118,15 +118,15 @@ public class Instance {
         return this.requests.get(index).getActivity();
     }
 
-    public float getPenaltyAByRequest(int index) {
+    public double getPenaltyAByRequest(int index) {
         return requests.get(index).getPenalty_A();
     }
 
-    public float getPenaltyTByRequest(int index) {
+    public double getPenaltyTByRequest(int index) {
         return requests.get(index).getPenalty_T();
     }
 
-    public float getPenaltyDByRequest(int index) {
+    public double getPenaltyDByRequest(int index) {
         return requests.get(index).getPenalty_D();
     }
 
