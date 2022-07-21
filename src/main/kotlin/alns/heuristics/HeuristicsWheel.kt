@@ -28,7 +28,7 @@ class HeuristicsWheel {
     init {
         addHeuristic(BestInserting(), W1)
         addHeuristic(BestRatioBestProxy(), W3)
-        //addHeuristic(RandomInsertion(), 2f)
+//        addHeuristic(RandomInsertion(), 2f)
         addHeuristic(BestRatioFirstProxy(), W1)
 
         addHeuristic(BestRatioRemoval(), W1)

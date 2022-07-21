@@ -66,7 +66,7 @@ class BestStarting : StartingHeuristic {
         }
     }
 
-    // This function inserts proxy2_r in place of a replaceable request
+    // This function inserts proxy_r in place of a replaceable request
     private fun replaceRequest(proxy_r: Request): Boolean {
         for (i in (0 until data.taken.size).shuffled()) { // loop on taken requests
             val r = data.taken[i]

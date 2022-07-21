@@ -76,8 +76,8 @@ class Data {
             freeSeatsInActivity[a][d][t] -= 1
         }
 
-        val result = setPenalty(r)
-        if (!result.first) return result
+//        val result = setPenalty(r)
+//        if (!result.first) return result
 
         missing.remove(r.instanceRequest.id)
         taken.add(r)
@@ -94,30 +94,31 @@ class Data {
         } else
             freeSeatsInActivity[r.activity][r.day][r.time] -= 1
 
-        setPenalty(r)
+//        setPenalty(r)
 
         missing.remove(r.instanceRequest.id)
         taken.add(r)
     }
 
-    private fun setPenalty(r: Request): Pair<Boolean, Int> {
-
-        val a = r.activity
-        val t = r.time
-        val d = r.day
-
-        if (r.instanceRequest.activity != a) {
-            if (instance.getCategoryByActivity(a) != instance.getCategoryByActivity(r.instanceRequest.activity))
-                return Pair(false, 5) // Chosen activity of wrong category
-            r.penalty_A = true
-        }
-        if (r.instanceRequest.day != d) r.penalty_D = true
-        if (r.instanceRequest.timeslot != t) r.penalty_T = true
-
-        return Pair(true, 0)
-    }
+//    private fun setPenalty(r: Request): Pair<Boolean, Int> {
+//
+//        val a = r.activity
+//        val t = r.time
+//        val d = r.day
+//
+//        if (r.instanceRequest.activity != a) {
+//            if (instance.getCategoryByActivity(a) != instance.getCategoryByActivity(r.instanceRequest.activity))
+//                return Pair(false, 5) // Chosen activity of wrong category
+//            r.penalty_A = true
+//        }
+//        if (r.instanceRequest.day != d) r.penalty_D = true
+//        if (r.instanceRequest.timeslot != t) r.penalty_T = true
+//
+//        return Pair(true, 0)
+//    }
 
     fun removeRequest(toDelete: Request): Boolean {
+
         val r = taken.firstOrNull { it.instanceRequest.id == toDelete.instanceRequest.id } ?: return false
         if (r.proxy) {
             proxyRequestsInActivity[r.activity][r.day][r.time] -= 1
