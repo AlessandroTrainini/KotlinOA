@@ -39,7 +39,7 @@ public class FileParser {
         br.readLine(); //skip a line that contains "REQUESTS"
 
         int r, u, d, t, g, P;
-        float p1, p2, p3;
+        Double p1, p2, p3;
         while ((line = br.readLine()) != null) {
             nums = line.split(" ");
             r = Integer.parseInt(nums[0]);
@@ -48,9 +48,9 @@ public class FileParser {
             d = Integer.parseInt(nums[3]);
             t = Integer.parseInt(nums[4]);
             g = Integer.parseInt(nums[5]);
-            p1 = Float.parseFloat(nums[6]);
-            p2 = Float.parseFloat(nums[7]);
-            p3 = Float.parseFloat(nums[8]);
+            p1 = Double.parseDouble(nums[6]);
+            p2 = Double.parseDouble(nums[7]);
+            p3 = Double.parseDouble(nums[8]);
             P = Integer.parseInt(nums[9]);
             istance.addRequest(r, u, a, d, t, g, p1, p2, p3, P);
         }

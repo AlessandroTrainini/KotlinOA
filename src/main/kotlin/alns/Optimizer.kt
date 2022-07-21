@@ -14,8 +14,8 @@ class Optimizer {
 
     private var t = 0
 
-    private var currentObjValue: Float = 0f
-    private var maxObjValue: Float = 0f
+    private var currentObjValue: Double = 0.toDouble()
+    private var maxObjValue: Double = 0.toDouble()
 
     fun runInstance() {
         val startingHeuristic: StartingHeuristic = BestStarting()
@@ -40,9 +40,10 @@ class Optimizer {
 
                 val toInsert = insertingHeuristic.insertRequest(data, qInsert)
 
-                val heuristicWeight: Float
+                val heuristicWeight: Double
                 val newObjValue = getCurrentObjectiveValue()
                 if (newObjValue > currentObjValue) { // Found a better solution
+                    currentObjValue = newObjValue
                     if (currentObjValue > maxObjValue) { // Found the best solution so far
                         maxObjValue = currentObjValue
                         heuristicWeight = heuristicsWheel.W1
@@ -70,8 +71,8 @@ class Optimizer {
         println(data.taken)
     }
 
-    private fun getCurrentObjectiveValue(): Float {
-        var value = 0f
+    private fun getCurrentObjectiveValue(): Double {
+        var value = 0.toDouble()
         data.taken.forEach {
             value += (it.instanceRequest.gain -
                     it.penalty_A * it.instanceRequest.penalty_A -
@@ -81,7 +82,7 @@ class Optimizer {
         return value
     }
 
-    private fun simulatedAnnealing(newObjValue: Float): Boolean {
+    private fun simulatedAnnealing(newObjValue: Double): Boolean {
 //        val objValuesDifference = newObjValue - currentObjValue
 //        if (objValuesDifference < 0) {
 //            println("Absolute difference: $objValuesDifference")
@@ -93,8 +94,8 @@ class Optimizer {
         return false
     }
 
-    operator fun Boolean.times(penaltyA: Float): Float {
-        return if (this) penaltyA else 0.toFloat()
+    operator fun Boolean.times(penaltyA: Double): Double {
+        return if (this) penaltyA else 0.toDouble()
     }
 }
 

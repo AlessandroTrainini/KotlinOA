@@ -22,7 +22,7 @@ public class Instance {
         this.num_categories = num_categories;
     }
 
-    public void addRequest(int ID, int unit, int activity, int day, int timeslot, int gain, float penalty_A, float penalty_D, float penalty_T, int proxy) {
+    public void addRequest(int ID, int unit, int activity, int day, int timeslot, int gain, Double penalty_A, Double penalty_D, Double penalty_T, int proxy) {
         requests.add(new InstanceRequest(ID, unit, activity, day, timeslot, gain, penalty_A, penalty_D, penalty_T, proxy));
     }
 
@@ -118,15 +118,15 @@ public class Instance {
         return this.requests.get(index).getActivity();
     }
 
-    public float getPenaltyAByRequest(int index) {
+    public Double getPenaltyAByRequest(int index) {
         return requests.get(index).getPenalty_A();
     }
 
-    public float getPenaltyTByRequest(int index) {
+    public Double getPenaltyTByRequest(int index) {
         return requests.get(index).getPenalty_T();
     }
 
-    public float getPenaltyDByRequest(int index) {
+    public Double getPenaltyDByRequest(int index) {
         return requests.get(index).getPenalty_D();
     }
 

@@ -5,7 +5,7 @@ import Instance.Instance
 
 
 class Data {
-    val instance: Instance = FileParser("inst/istanza_prova.txt").istance
+    val instance: Instance = FileParser("inst/OTSP1.txt").istance
     val taken = arrayListOf<Request>() //requests that are in the current solution
     val missing = arrayListOf<Int>() //ids of requests that could be added at the current solution
 
@@ -18,9 +18,9 @@ class Data {
 
 
     val gOrder = ArrayList<Pair<Int, Int>>()
-    val agRatioOrder = ArrayList<Pair<Int, Float>>()
-    val tgRatioOrder = ArrayList<Pair<Int, Float>>()
-    val dgRatioOrder = ArrayList<Pair<Int, Float>>()
+    val agRatioOrder = ArrayList<Pair<Int, Double>>()
+    val tgRatioOrder = ArrayList<Pair<Int, Double>>()
+    val dgRatioOrder = ArrayList<Pair<Int, Double>>()
 
     /**
      * In this method we create the map of the capacity for each activity, when we'll insert a request in "taken" we first

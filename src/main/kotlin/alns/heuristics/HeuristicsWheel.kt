@@ -10,15 +10,15 @@ import kotlin.math.floor
 
 class HeuristicsWheel {
 
-    val W1 = 10f // Global optimum
-    val W2 = 7.5f // Better than before
-    val W3 = 5f // Accepted
-    val W4 = 2.5f // Rejected
+    val W1 = 10f.toDouble() // Global optimum
+    val W2 = 7.5f.toDouble() // Better than before
+    val W3 = 5f.toDouble() // Accepted
+    val W4 = 2.5f.toDouble() // Rejected
 
     private val insertingStorage = mutableListOf<InsertingHeuristic>()
     private val removalStorage = mutableListOf<RemovalHeuristic>()
-    private val insertingWeight = mutableListOf<Float>()
-    private val removalWeight = mutableListOf<Float>()
+    private val insertingWeight = mutableListOf<Double>()
+    private val removalWeight = mutableListOf<Double>()
 
     private val lambda = 0.3f
 
@@ -35,7 +35,7 @@ class HeuristicsWheel {
         addHeuristic(RandomRemoval(), W2)
     }
 
-    private fun addHeuristic(h: Any, weight: Float) {
+    private fun addHeuristic(h: Any, weight: Double) {
         if (h is InsertingHeuristic) {
             insertingStorage.add(h)
             insertingWeight.add(weight)
@@ -45,7 +45,7 @@ class HeuristicsWheel {
         }
     }
 
-    fun updateWeight(w: Float) {
+    fun updateWeight(w: Double) {
         insertingWeight[currentIns] = lambda * insertingWeight[currentIns] + (1 - lambda) * w
         removalWeight[currentRem] = lambda * removalWeight[currentRem] + (1 - lambda) * w
     }
@@ -80,7 +80,7 @@ class HeuristicsWheel {
         return removalStorage[currentRem]
     }
 
-    private fun getMostPromisingIndex(weightList: MutableList<Float>): Int {
+    private fun getMostPromisingIndex(weightList: MutableList<Double>): Int {
         val tot = weightList.sum()
         val distribution = mutableListOf<Int>()
         for (i in (0 until weightList.size)) {

@@ -7,13 +7,13 @@ public class InstanceRequest {
     private int day;
     private int timeslot;
     private int gain;
-    private float penalty_A;
-    private float penalty_D;
-    private float penalty_T;
+    private Double penalty_A;
+    private Double penalty_D;
+    private Double penalty_T;
     private int proxy;
 
 
-    public InstanceRequest(int ID, int unit, int activity, int day, int timeslot, int gain, float penalty_A, float penalty_D, float penalty_T, int proxy) {
+    public InstanceRequest(int ID, int unit, int activity, int day, int timeslot, int gain, Double penalty_A, Double penalty_D, Double penalty_T, int proxy) {
         this.ID = ID;
         this.unit = unit;
         this.activity = activity;
@@ -83,27 +83,27 @@ public class InstanceRequest {
         this.gain = gain;
     }
 
-    public float getPenalty_A() {
+    public Double getPenalty_A() {
         return penalty_A;
     }
 
-    public void setPenalty_A(float penalty_A) {
+    public void setPenalty_A(Double penalty_A) {
         this.penalty_A = penalty_A;
     }
 
-    public float getPenalty_D() {
+    public Double getPenalty_D() {
         return penalty_D;
     }
 
-    public void setPenalty_D(float penalty_D) {
+    public void setPenalty_D(Double penalty_D) {
         this.penalty_D = penalty_D;
     }
 
-    public float getPenalty_T() {
+    public Double getPenalty_T() {
         return penalty_T;
     }
 
-    public void setPenalty_T(float penalty_T) {
+    public void setPenalty_T(Double penalty_T) {
         this.penalty_T = penalty_T;
     }
 
