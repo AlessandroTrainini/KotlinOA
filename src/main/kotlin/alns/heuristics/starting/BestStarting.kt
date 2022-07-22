@@ -12,9 +12,9 @@ class BestStarting : StartingHeuristic {
 
     override fun generateStartingPoint(data: Data) {
         val progressBar = ProgressBar(data.instance.requests.size)
+        this.data = data
         for (ir in data.instance.requests.sortedByDescending { it.gain }) {
             val r = Request(ir, false)
-            this.data = data
             locateRequest(r)
             progressBar.updateProgressBar()
         }
