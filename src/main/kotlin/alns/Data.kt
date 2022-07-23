@@ -7,7 +7,7 @@ import Instance.Instance
 class Data {
     val instance: Instance = FileParser("inst/OTSP1.txt").istance
     val taken = arrayListOf<Request>() //requests that are in the current solution
-    val missing = arrayListOf<Int>() //ids of requests that could be added at the current solution
+    private val missing = arrayListOf<Int>() //ids of requests that could be added at the current solution
 
     val freeSeatsInActivity =
         arrayListOf<Array<IntArray>>() // The capacity of each activity, for each day, in each timeslot [a][d][t] -> capacity: Int
@@ -38,7 +38,7 @@ class Data {
             agRatioOrder.add(Pair(r.id, r.gain / r.penalty_A))
             dgRatioOrder.add(Pair(r.id, r.gain / r.penalty_D))
             tgRatioOrder.add(Pair(r.id, r.gain / r.penalty_T))
-            missing.add(r.id)
+            addIdToMissing(r.id)
         }
 
         gOrder.sortByDescending { it.second }
@@ -50,19 +50,24 @@ class Data {
 
     fun takeNotTrustedRequest(r: Request): Pair<Boolean, Int> {
 
-        val a = r.activity
-        val t = r.time
-        val d = r.day
+        val a = r.getA()
+        val d = r.getD()
+        val t = r.getT()
+
+        // if (taken.map { it.instanceRequest.id }.contains(r.instanceRequest.id)) error("Request already taken")
+
+        if (instance.getCategoryByActivity(a) != instance.getCategoryByActivity(r.instanceRequest.activity))
+            return Pair(false, 5) // Chosen activity of wrong category
 
         val activityCapacityOk = freeSeatsInActivity[a][d][t] > 0
 
         if (r.proxy) {
             if (r.instanceRequest.proxy < 1) return Pair(false, 1) // Request can't be handled by a proxy
 
-            val proxyCanHandleOtherR = proxyDailyCapacity[d] != 0
+            val proxyCanHandleOtherR = proxyDailyCapacity[d] > 0
             if (!proxyCanHandleOtherR) return Pair(false, 2) // Proxy is full of requests
 
-            val proxyAlreadyIn = proxyRequestsInActivity[a][d][t] != 0
+            val proxyAlreadyIn = proxyRequestsInActivity[a][d][t] > 0
             // Proxy can't enter because activity is full of people
             if (!proxyAlreadyIn && !activityCapacityOk) return Pair(false, 3)
 
@@ -79,25 +84,55 @@ class Data {
 //        val result = setPenalty(r)
 //        if (!result.first) return result
 
-        missing.remove(r.instanceRequest.id)
+        removeIdFromMissing(r.instanceRequest.id)
         taken.add(r)
 
         return Pair(true, 0)
     }
 
-    fun takeTrustedRequest(r: Request) {
+    fun removeRequest(toDelete: Request): Boolean {
+        val r = taken.firstOrNull { it.instanceRequest.id == toDelete.instanceRequest.id } ?: return false
+        val result = taken.remove(r)
+        if (!result) error("Can't remove request ${r.instanceRequest.id}")
+        addIdToMissing(r.instanceRequest.id)
         if (r.proxy) {
-            proxyDailyCapacity[r.day] -= 1
-            if (proxyRequestsInActivity[r.activity][r.day][r.time] == 0)
-                freeSeatsInActivity[r.activity][r.day][r.time] -= 1
-            proxyRequestsInActivity[r.activity][r.day][r.time] += 1
-        } else
-            freeSeatsInActivity[r.activity][r.day][r.time] -= 1
+            proxyRequestsInActivity[r.getA()][r.getD()][r.getT()] -= 1
+            if (proxyRequestsInActivity[r.getA()][r.getD()][r.getT()] == 0)
+                freeSeatsInActivity[r.getA()][r.getD()][r.getT()] += 1
+            proxyDailyCapacity[r.getD()] += 1
+        } else {
+            freeSeatsInActivity[r.getA()][r.getD()][r.getT()] += 1
+        }
+        return true
+    }
 
-//        setPenalty(r)
+    fun addIdToMissing(id: Int) {
+        if (missing.contains(id))
+            error("Request id already in missing!")
+        // println("Add to missing: $id")
+        missing.add(id)
+    }
 
-        missing.remove(r.instanceRequest.id)
-        taken.add(r)
+    fun removeIdFromMissing(id: Int) {
+        if (!missing.remove(id))
+            error("Can't remove id from missing")
+        else if (missing.contains(id))
+            error("Request still in missing")
+        // println("Remove from missing: $id")
+    }
+
+    fun getMissing(): ArrayList<Int> { return missing }
+
+    fun checkFeasibility() {
+        val takenIDs = taken.map{it.instanceRequest.id}
+        if (takenIDs.size != takenIDs.distinct().size) error("Duplicates in taken")
+        val missingIDs = missing
+        if (missingIDs.size != missingIDs.distinct().size) error("Duplicates in missing")
+        val IDs = instance.requests.map { it.id }
+        val instanceIDs = IDs.toSet()
+        val runIDs = takenIDs.toSet().union(missingIDs.toSet())
+        if (!instanceIDs.containsAll(runIDs)) error("We have more ids :0")
+        if (!runIDs.containsAll(instanceIDs)) error("We have lost some id")
     }
 
 //    private fun setPenalty(r: Request): Pair<Boolean, Int> {
@@ -117,21 +152,20 @@ class Data {
 //        return Pair(true, 0)
 //    }
 
-    fun removeRequest(toDelete: Request): Boolean {
-
-        val r = taken.firstOrNull { it.instanceRequest.id == toDelete.instanceRequest.id } ?: return false
-        if (r.proxy) {
-            proxyRequestsInActivity[r.activity][r.day][r.time] -= 1
-            if (proxyRequestsInActivity[r.activity][r.day][r.time] == 0) freeSeatsInActivity[r.activity][r.day][r.time] += 1
-            proxyDailyCapacity[r.day] += 1
-        } else {
-            freeSeatsInActivity[r.activity][r.day][r.time] += 1
-        }
-        taken.remove(r)
-        missing.add(r.instanceRequest.id)
-        return true
-    }
-
+//    fun takeTrustedRequest(r: Request) {
+//        if (r.proxy) {
+//            proxyDailyCapacity[r.day] -= 1
+//            if (proxyRequestsInActivity[r.activity][r.day][r.time] == 0)
+//                freeSeatsInActivity[r.activity][r.day][r.time] -= 1
+//            proxyRequestsInActivity[r.activity][r.day][r.time] += 1
+//        } else
+//            freeSeatsInActivity[r.activity][r.day][r.time] -= 1
+//
+//        setPenalty(r)
+//
+//        missing.remove(r.instanceRequest.id)
+//        taken.add(r)
+//    }
 
 //    fun tryToCollocateInTheFirst(r: InstanceRequest) {
 //        val c = instance.getCategoryByActivity(r.activity)

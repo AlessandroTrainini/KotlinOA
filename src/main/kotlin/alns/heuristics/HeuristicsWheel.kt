@@ -22,13 +22,13 @@ class HeuristicsWheel {
 
     private val lambda = 0.3f
 
-    private var currentIns = 0
-    private var currentRem = 0
+    private var currentIns = -1
+    private var currentRem = -1
 
     init {
         addHeuristic(BestInserting(), W1)
         addHeuristic(BestRatioBestProxy(), W3)
-//        addHeuristic(RandomInsertion(), 2f)
+        addHeuristic(RandomInsertion(), W4)
         addHeuristic(BestRatioFirstProxy(), W1)
 
         addHeuristic(BestRatioRemoval(), W1)

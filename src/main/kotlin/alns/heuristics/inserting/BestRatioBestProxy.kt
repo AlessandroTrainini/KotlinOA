@@ -12,77 +12,84 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
         val activityIndex = data.agRatioOrder.indexOfFirst { it.first == candidate.id }
         val timeIndex = data.tgRatioOrder.indexOfFirst { it.first == candidate.id }
         val dayIndex = data.dgRatioOrder.indexOfFirst { it.first == candidate.id }
-        val r: Request?
+        val r = Request(candidate, true)
 
-        if (activityIndex < timeIndex && activityIndex < dayIndex) { //it's better to change the activity
-            r = tryAnotherActivityWithProxy(Request(candidate, proxy = true))
-                ?: tryAnotherDayWithProxy(Request(candidate, proxy = true))
-                        ?: tryAnotherTimeWithProxy(Request(candidate, proxy = true))
+        val result = if (activityIndex < timeIndex && activityIndex < dayIndex) { //it's better to change the activity
+            tryAnotherActivityWithProxy(r) || tryAnotherDayWithProxy(r) || tryAnotherTimeWithProxy(r)
 
         } else if (timeIndex < activityIndex && timeIndex < dayIndex) { //it's better to change the time
-            r = tryAnotherTimeWithProxy(Request(candidate, proxy = true))
-                ?: tryAnotherDayWithProxy(Request(candidate, proxy = true))
-                        ?: tryAnotherActivityWithProxy(Request(candidate, proxy = true))
+            tryAnotherTimeWithProxy(r) || tryAnotherDayWithProxy(r) || tryAnotherActivityWithProxy(r)
         } else { //it's better to change the day
-            r = tryAnotherDayWithProxy(Request(candidate, proxy = true))
-                ?: tryAnotherActivityWithProxy(Request(candidate, proxy = true))
-                        ?: tryAnotherTimeWithProxy(Request(candidate, proxy = true))
+            tryAnotherDayWithProxy(r) || tryAnotherActivityWithProxy(r) || tryAnotherTimeWithProxy(r)
         }
-        if (r != null) {
-            insertionList.add(r)
-            data.takeTrustedRequest(r)
-        } else if (candidate.proxy != 2)
+        if (!result)
             trySomewhereElseWithoutProxy(candidate, data)
     }
 
-    private fun tryAnotherActivityWithProxy(r: Request): Request? {
-        for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(r.activity)]) {
-            if (data.proxyRequestsInActivity[a][r.day][r.time] > 0) { //is there already a proxy so the capacity won't grow
-                if (data.proxyDailyCapacity[r.day] > 0) { //proxy can take this request
+    private fun tryAnotherActivityWithProxy(r: Request): Boolean {
+        for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(r.getA())]) {
+            if (data.proxyRequestsInActivity[a][r.getD()][r.getT()] > 0) { //is there already a proxy so the capacity won't grow
+                if (data.proxyDailyCapacity[r.getD()] > 0) { //proxy can take this request
                     r.setActivity(a)
-                    return r
+                    if (data.takeNotTrustedRequest(r).first) {
+                        insertionList.add(r)
+                        return true
+                    }
                 }
             } else { //there is no proxy there, trying to put it there if there's room
-                if (data.freeSeatsInActivity[a][r.day][r.time] > 0)
-                    if (data.proxyDailyCapacity[r.day] > 0) {
+                if (data.freeSeatsInActivity[a][r.getD()][r.getT()] > 0)
+                    if (data.proxyDailyCapacity[r.getD()] > 0) {
                         r.setActivity(a)
-                        return r
+                        if (data.takeNotTrustedRequest(r).first) {
+                            insertionList.add(r)
+                            return true
+                        }
                     }
             }
         }
-        return null
+        return false
     }
 
-    private fun tryAnotherDayWithProxy(r: Request): Request? {
+    private fun tryAnotherDayWithProxy(r: Request): Boolean {
         for (d in 0 until data.instance.num_days) {
             if (data.proxyDailyCapacity[d] > 0) {
-                if (data.proxyRequestsInActivity[r.activity][d][r.time] > 0) { //there is already a proxy in the activity
+                if (data.proxyRequestsInActivity[r.getA()][d][r.getT()] > 0) { //there is already a proxy in the activity
                     r.setDay(d)
-                    return r
-                } else if (data.freeSeatsInActivity[r.activity][d][r.time] > 0) {
+                    if (data.takeNotTrustedRequest(r).first) {
+                        insertionList.add(r)
+                        return true
+                    }
+                } else if (data.freeSeatsInActivity[r.getA()][d][r.getT()] > 0) {
                     r.setDay(d)
-                    return r
+                    if (data.takeNotTrustedRequest(r).first) {
+                        insertionList.add(r)
+                        return true
+                    }
                 }
             }
         }
-        return null
+        return true
     }
 
-    private fun tryAnotherTimeWithProxy(r: Request): Request? {
+    private fun tryAnotherTimeWithProxy(r: Request): Boolean {
         for (t in 0 until data.instance.num_timeslots) {
-            if (data.proxyRequestsInActivity[r.activity][r.day][t] > 0) { //is there already a proxy so the capacity won't grow
-                if (data.proxyDailyCapacity[r.day] > 0) { //proxy can take this request
-                    r.setTime(r.time)
-                    return r
+            if (data.proxyRequestsInActivity[r.getA()][r.getD()][t] > 0) { //is there already a proxy so the capacity won't grow
+                if (data.proxyDailyCapacity[r.getD()] > 0) { //proxy can take this request
+                    r.setTime(t)
+                    if (data.takeNotTrustedRequest(r).first) {
+                        return true
+                    }
                 }
             } else { //there is no proxy there, trying to put it there if there's room
-                if (data.freeSeatsInActivity[r.activity][r.day][t] > 0)
-                    if (data.proxyDailyCapacity[r.day] > 0) {
-                        r.setTime(r.time)
-                        return r
+                if (data.freeSeatsInActivity[r.getA()][r.getD()][t] > 0)
+                    if (data.proxyDailyCapacity[r.getD()] > 0) {
+                        r.setTime(t)
+                        if (data.takeNotTrustedRequest(r).first) {
+                            return true
+                        }
                     }
             }
         }
-        return null
+        return false
     }
 }

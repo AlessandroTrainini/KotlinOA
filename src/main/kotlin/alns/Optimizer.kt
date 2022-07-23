@@ -3,12 +3,13 @@ package alns
 import alns.heuristics.*
 import alns.heuristics.starting.BestStarting
 import tools.ProgressBar
+import java.io.File
 
 class Optimizer {
 
     private val data = Data()
-    private val qInsert = 50
-    private val qRemove = 30
+    private val qInsert = 1
+    private val qRemove = 1
     private val segmentSize = 100
     private val maxIterNum = 10
 
@@ -16,6 +17,9 @@ class Optimizer {
 
     private var currentObjValue: Double = 0.toDouble()
     private var maxObjValue: Double = 0.toDouble()
+    private lateinit var maxTaken: List<Request>
+
+
 
     fun runInstance() {
         val startingHeuristic: StartingHeuristic = BestStarting()
@@ -23,22 +27,42 @@ class Optimizer {
         println("Generation of a good starting point")
         startingHeuristic.generateStartingPoint(data)
         currentObjValue = getCurrentObjectiveValue()
+        maxObjValue = currentObjValue
+        maxTaken = data.taken.toList()
         println("Starting point generated with objective value: ${getCurrentObjectiveValue()}")
 
         val heuristicsWheel = HeuristicsWheel()
-        var insertingHeuristic: InsertingHeuristic = heuristicsWheel.getBestInsHeuristic()
-        var removalHeuristic: RemovalHeuristic = heuristicsWheel.getBestRemHeuristic()
+        var insertingHeuristic: InsertingHeuristic
+        var removalHeuristic: RemovalHeuristic
 
         for (i in 1 until maxIterNum) {
             println("Segment n° $i")
 
+            insertingHeuristic = heuristicsWheel.getInsHeuristic()
+            removalHeuristic = heuristicsWheel.getRemHeuristic()
+
             val progressBar = ProgressBar(segmentSize)
             for (j in 0 until segmentSize) { // Segment
                 progressBar.updateProgressBar()
+
+                // printInterestingValues("Before removing")
                 val toRemove = removalHeuristic.removeRequest(data, qRemove)
-                toRemove.forEach { data.removeRequest(it) }
+                toRemove.forEach { if (!data.removeRequest(it)) error("Can't remove request") }
+
+                toRemove.forEach {
+                    val result = data.takeNotTrustedRequest(it)
+                    if (!result.first) {
+                        data.checkFeasibility()
+                        // printInterestingValues("While removal backtraking")
+                        error("Can't perform removal backtraking")
+                    }
+                }
+                toRemove.forEach { if (!data.removeRequest(it)) error("Can't remove request") }
+
+                // printInterestingValues("Between insertion and removing")
 
                 val toInsert = insertingHeuristic.insertRequest(data, qInsert)
+                // printInterestingValues("After insertion")
 
                 val heuristicWeight: Double
                 val newObjValue = getCurrentObjectiveValue()
@@ -46,6 +70,7 @@ class Optimizer {
                     currentObjValue = newObjValue
                     if (currentObjValue > maxObjValue) { // Found the best solution so far
                         maxObjValue = currentObjValue
+                        maxTaken = data.taken.toList()
                         heuristicWeight = heuristicsWheel.W1
                     } else heuristicWeight = heuristicsWheel.W2 // Found better solution
                 } else { // the obj value was better before
@@ -53,8 +78,18 @@ class Optimizer {
                         currentObjValue = newObjValue
                         heuristicWeight = heuristicsWheel.W3
                     } else { // backtracking
-                        toInsert.forEach { data.removeRequest(it) }
-                        toRemove.forEach { data.takeTrustedRequest(it) }
+                        // println("Backtraking?")
+                        // printInterestingValues("Before insertion backtraking")
+                        toInsert.forEach { if(!data.removeRequest(it)) error("Can't perform insertion backtraking") }
+                        // printInterestingValues("Between insertion and removal backtraking")
+                        toRemove.forEach {
+                            val result = data.takeNotTrustedRequest(it)
+                            if (!result.first) {
+                                data.checkFeasibility()
+                                // printInterestingValues("While removal backtraking")
+                                error("Can't perform removal backtraking")
+                            }
+                        }
                         heuristicWeight = heuristicsWheel.W4
                     }
                 }
@@ -63,12 +98,17 @@ class Optimizer {
             }
 
             println("End segment n° $i objective value: ${getCurrentObjectiveValue()}")
-
-            insertingHeuristic = heuristicsWheel.getInsHeuristic()
-            removalHeuristic = heuristicsWheel.getRemHeuristic()
         }
 
-        println(data.taken)
+        output()
+    }
+
+    private fun printInterestingValues(description: String) {
+        println("\n______________ $description ____________")
+        println("${data.freeSeatsInActivity[0][0][0]} - ${data.freeSeatsInActivity[0][0][1]}")
+        println("${data.proxyDailyCapacity[0]}")
+        data.taken.forEach{println(it)}
+        println("______________")
     }
 
     private fun getCurrentObjectiveValue(): Double {
@@ -96,6 +136,13 @@ class Optimizer {
 
     operator fun Boolean.times(penaltyA: Double): Double {
         return if (this) penaltyA else 0.toDouble()
+    }
+
+    private fun output() {
+        File("out.txt").writeText("ID - Activity | def - Day | def - Time | def - Proxy | def - Gain - PenaltyA - PenaltyD - PenaltyT - Profit\n")
+        maxTaken.forEach {
+            File("out.txt").appendText(it.toString())
+        }
     }
 }
 

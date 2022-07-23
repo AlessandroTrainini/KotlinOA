@@ -9,8 +9,9 @@ class RandomInsertion : InsertingHeuristic {
     override fun insertRequest(data: Data, q: Int): List<Request> {
         val insertionList = mutableListOf<Request>()
 
-        while (insertionList.size < q && data.missing.size != 0) {
-            val nr = data.missing.random()
+        var trial = 100
+        while (insertionList.size < q && data.getMissing().size != 0 && trial > 0) {
+            val nr = data.getMissing().random()
             val ir = data.instance.getRequestById(nr)
 
             val p = Random.nextBoolean() && ir.proxy != 0
@@ -19,7 +20,9 @@ class RandomInsertion : InsertingHeuristic {
             val t = Random.nextInt(data.instance.num_timeslots)
 
             val r = Request(ir, p)
-            insertionList.add(r)
+            if (data.takeNotTrustedRequest(r).first)
+                insertionList.add(r)
+            trial--
         }
 
         return insertionList.toList()

@@ -5,34 +5,61 @@ import Instance.InstanceRequest
 data class Request(
     val instanceRequest: InstanceRequest,
     var proxy: Boolean,
-    var day: Int = instanceRequest.day,
-    var time: Int = instanceRequest.timeslot,
-    var activity: Int = instanceRequest.activity,
+    private var day: Int = instanceRequest.day,
+    private var time: Int = instanceRequest.timeslot,
+    private var activity: Int = instanceRequest.activity,
     var penalty_A: Boolean = instanceRequest.activity != activity,
     var penalty_D: Boolean = instanceRequest.day != day,
     var penalty_T: Boolean = instanceRequest.timeslot != time
-)
-{
-    override fun toString(): String {
-        return "${instanceRequest.id} - $day - $time - $activity - $penalty_A - $penalty_D - $penalty_T - $proxy"
+) {
+
+    fun getA(): Int {
+        return activity
     }
 
-    @JvmName("setActivity1")
+    fun getD(): Int {
+        return day
+    }
+
+    fun getT(): Int {
+        return time
+    }
+
     fun setActivity(activity: Int) {
         this.activity = activity
         penalty_A = instanceRequest.activity != activity
     }
 
-    @JvmName("setDay1")
     fun setDay(day: Int) {
         this.day = day
         penalty_D = instanceRequest.day != day
     }
 
-    @JvmName("setTime1")
     fun setTime(time: Int) {
         this.time = time
         penalty_T = instanceRequest.timeslot != time
     }
+
+    private operator fun Boolean.times(x: Double): Double {
+        return if (this) x else 0.toDouble()
+    }
+
+    override fun toString(): String {
+        val gain = instanceRequest.gain -
+                penalty_A * instanceRequest.penalty_A -
+                penalty_D * instanceRequest.penalty_D -
+                penalty_T * instanceRequest.penalty_T
+        return "${instanceRequest.id} - " +
+                "$activity | ${instanceRequest.activity} - " +
+                "$day | ${instanceRequest.day} - " +
+                "$time | ${instanceRequest.timeslot} - " +
+                "$proxy | ${instanceRequest.proxy} - " +
+                "${instanceRequest.gain} - " +
+                "${if (penalty_A) instanceRequest.penalty_A else 0} - " +
+                "${if (penalty_D) instanceRequest.penalty_D else 0} - " +
+                "${if (penalty_T) instanceRequest.penalty_T else 0} - " +
+                "$gain\n"
+    }
 }
+
 

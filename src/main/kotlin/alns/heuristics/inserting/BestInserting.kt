@@ -21,20 +21,23 @@ class BestInserting : InsertingHeuristic {
     override fun insertRequest(data: Data, q: Int): List<Request> {
         this.data = data
         insertionList = mutableListOf()
-        val candidates = data.gOrder.filter { it.first in data.missing }.toMutableList()
+        // println("insertRequest")
+        val candidates = data.gOrder.filter { data.getMissing().contains(it.first) }.toMutableList()
         while (insertionList.size < q) {
+            // println("Cycle $candidates")
             if (candidates.size == 0)
                 return insertionList
             val candidate = data.instance.getRequestById(candidates.first().first)
             candidates.removeAt(0) //pop
             val fingerprint = getRequestTaste(candidate)
+            val r = Request(candidate, candidate.proxy > 0)
             when {
-                fingerprint.contentEquals(ADT) -> adt(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
-                fingerprint.contentEquals(ATD) -> atd(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
-                fingerprint.contentEquals(DAT) -> dat(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
-                fingerprint.contentEquals(DTA) -> dta(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
-                fingerprint.contentEquals(TDA) -> tda(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
-                fingerprint.contentEquals(TAD) -> tad(Request(candidate, candidate.proxy > 0), candidate.proxy > 0)
+                fingerprint.contentEquals(ADT) -> adt(r, r.proxy)
+                fingerprint.contentEquals(ATD) -> atd(r, r.proxy)
+                fingerprint.contentEquals(DAT) -> dat(r, r.proxy)
+                fingerprint.contentEquals(DTA) -> dta(r, r.proxy)
+                fingerprint.contentEquals(TDA) -> tda(r, r.proxy)
+                fingerprint.contentEquals(TAD) -> tad(r, r.proxy)
             }
         }
         return insertionList
@@ -52,83 +55,108 @@ class BestInserting : InsertingHeuristic {
 
     private fun adt(r: Request, withProxy: Boolean): Boolean {
         var result = false
-        val lists = getIndexesList(r.activity, r.day, r.time)
-        for (t in lists[2])
-            for (d in lists[1])
-                for (a in lists[0]) {
-                    result = tryToPlace(r, a, d, t, withProxy)
-                    if (result) break
+        val lists = getIndexesList(r.getA(), r.getD(), r.getT())
+        run bigBrother@{
+            lists[2].forEach { t ->
+                lists[1].forEach { d ->
+                    lists[0].forEach { a ->
+                        result = tryToPlace(r, a, d, t, withProxy)
+                        if (result) return@bigBrother
+                    }
                 }
+            }
+        }
         if (!result && withProxy)
-            result = dat(r, false)
+            result = adt(r, false)
         return result
     }
 
     private fun atd(r: Request, withProxy: Boolean): Boolean {
         var result = false
-        val lists = getIndexesList(r.activity, r.day, r.time)
-        for (d in lists[1])
-            for (t in lists[2])
-                for (a in lists[0]) {
-                    result = tryToPlace(r, a, d, t, withProxy)
-                    if (result) break
+        val lists = getIndexesList(r.getA(), r.getD(), r.getT())
+        run bigBrother@{
+            lists[1].forEach { d ->
+                lists[2].forEach { t ->
+                    lists[0].forEach { a ->
+                        result = tryToPlace(r, a, d, t, withProxy)
+                        if (result) return@bigBrother
+                    }
                 }
+            }
+        }
         if (!result && withProxy)
-            result = dat(r, false)
+            result = atd(r, false)
         return result
     }
 
     private fun tda(r: Request, withProxy: Boolean): Boolean {
         var result = false
-        val lists = getIndexesList(r.activity, r.day, r.time)
-        for (a in lists[0])
-            for (d in lists[1])
-                for (t in lists[2]) {
-                    result = tryToPlace(r, a, d, t, withProxy)
-                    if (result) break
+        val lists = getIndexesList(r.getA(), r.getD(), r.getT())
+        run bigBrother@{
+            lists[0].forEach { a ->
+                lists[1].forEach { d ->
+                    lists[2].forEach { t ->
+                        result = tryToPlace(r, a, d, t, withProxy)
+                        if (result) return@bigBrother
+                    }
                 }
+            }
+        }
         if (!result && withProxy)
-            result = dat(r, false)
+            result = tda(r, false)
         return result
     }
 
     private fun tad(r: Request, withProxy: Boolean): Boolean {
         var result = false
-        val lists = getIndexesList(r.activity, r.day, r.time)
-        for (d in lists[1])
-            for (a in lists[0])
-                for (t in lists[2]) {
-                    result = tryToPlace(r, a, d, t, withProxy)
-                    if (result) break
+        val lists = getIndexesList(r.getA(), r.getD(), r.getT())
+        run bigBrother@{
+            lists[1].forEach { d ->
+                lists[0].forEach { a ->
+                    lists[2].forEach { t ->
+                        result = tryToPlace(r, a, d, t, withProxy)
+                        if (result) return@bigBrother
+                    }
                 }
+            }
+        }
         if (!result && withProxy)
-            result = dat(r, false)
+            result = tad(r, false)
         return result
     }
 
     private fun dta(r: Request, withProxy: Boolean): Boolean {
         var result = false
-        val lists = getIndexesList(r.activity, r.day, r.time)
-        for (a in lists[0])
-            for (t in lists[2])
-                for (d in lists[1]) {
-                    result = tryToPlace(r, a, d, t, withProxy)
-                    if (result) break
+        val lists = getIndexesList(r.getA(), r.getD(), r.getT())
+        run bigBrother@{
+            lists[0].forEach { a ->
+                lists[2].forEach { t ->
+                    lists[1].forEach { d ->
+                        result = tryToPlace(r, a, d, t, withProxy)
+                        if (result)
+                            return@bigBrother
+                    }
                 }
+            }
+        }
         if (!result && withProxy)
-            result = dat(r, false)
+            result = dta(r, false)
         return result
     }
 
     private fun dat(r: Request, withProxy: Boolean): Boolean {
         var result = false
-        val lists = getIndexesList(r.activity, r.day, r.time)
-        for (t in lists[2])
-            for (a in lists[0])
-                for (d in lists[1]) {
-                    result = tryToPlace(r, a, d, t, withProxy)
-                    if (result) break
+        val lists = getIndexesList(r.getA(), r.getD(), r.getT())
+        run bigBrother@{
+            lists[2].forEach { t ->
+                lists[0].forEach { a ->
+                    lists[1].forEach { d ->
+                        result = tryToPlace(r, a, d, t, withProxy)
+                        if (result) return@bigBrother
+                    }
                 }
+            }
+        }
         if (!result && withProxy)
             result = dat(r, false)
         return result
@@ -139,9 +167,22 @@ class BestInserting : InsertingHeuristic {
         r.setDay(d)
         r.setTime(t)
         r.proxy = proxy
+        // printInterestingValues("In Best inserting try to place")
+        // println("Try $r")
         val result = data.takeNotTrustedRequest(r)
-        if (result.first) insertionList.add(r)
+        if (result.first) {
+            // println("Placed $r")
+            // printInterestingValues("In Best inserting succeed to place")
+            insertionList.add(r)
+        }
         return result.first
+    }
+
+
+    private fun printInterestingValues(description: String) {
+        println("\n______________ $description ____________")
+        data.taken.forEach { println(it) }
+        println("______________")
     }
 
 //    private fun tryToPlace(r: Request, a: Int, d: Int, t: Int, proxy: Boolean): Request?{
