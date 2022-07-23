@@ -22,8 +22,8 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
         } else { //it's better to change the day
             tryAnotherDayWithProxy(r) || tryAnotherActivityWithProxy(r) || tryAnotherTimeWithProxy(r)
         }
-        if (!result)
-            trySomewhereElseWithoutProxy(candidate, data)
+        if (!result) trySomewhereElseWithoutProxy(candidate, data)
+        else insertionList.add(r)
     }
 
     private fun tryAnotherActivityWithProxy(r: Request): Boolean {
@@ -32,7 +32,6 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
                 if (data.proxyDailyCapacity[r.getD()] > 0) { //proxy can take this request
                     r.setActivity(a)
                     if (data.takeNotTrustedRequest(r).first) {
-                        insertionList.add(r)
                         return true
                     }
                 }
@@ -41,7 +40,6 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
                     if (data.proxyDailyCapacity[r.getD()] > 0) {
                         r.setActivity(a)
                         if (data.takeNotTrustedRequest(r).first) {
-                            insertionList.add(r)
                             return true
                         }
                     }
@@ -56,19 +54,17 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
                 if (data.proxyRequestsInActivity[r.getA()][d][r.getT()] > 0) { //there is already a proxy in the activity
                     r.setDay(d)
                     if (data.takeNotTrustedRequest(r).first) {
-                        insertionList.add(r)
                         return true
                     }
                 } else if (data.freeSeatsInActivity[r.getA()][d][r.getT()] > 0) {
                     r.setDay(d)
                     if (data.takeNotTrustedRequest(r).first) {
-                        insertionList.add(r)
                         return true
                     }
                 }
             }
         }
-        return true
+        return false
     }
 
     private fun tryAnotherTimeWithProxy(r: Request): Boolean {

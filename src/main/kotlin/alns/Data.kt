@@ -5,7 +5,7 @@ import Instance.Instance
 
 
 class Data {
-    val instance: Instance = FileParser("inst/OTSP1.txt").istance
+    val instance: Instance = FileParser("inst/OTSP4.txt").istance
     val taken = arrayListOf<Request>() //requests that are in the current solution
     private val missing = arrayListOf<Int>() //ids of requests that could be added at the current solution
 
@@ -106,19 +106,17 @@ class Data {
         return true
     }
 
-    fun addIdToMissing(id: Int) {
-        if (missing.contains(id))
-            error("Request id already in missing!")
-        // println("Add to missing: $id")
+    private fun addIdToMissing(id: Int) {
+//        if (missing.contains(id))
+//            error("Request id already in missing!")
         missing.add(id)
     }
 
-    fun removeIdFromMissing(id: Int) {
+    private fun removeIdFromMissing(id: Int) {
         if (!missing.remove(id))
             error("Can't remove id from missing")
-        else if (missing.contains(id))
-            error("Request still in missing")
-        // println("Remove from missing: $id")
+//        else if (missing.contains(id))
+//            error("Request still in missing")
     }
 
     fun getMissing(): ArrayList<Int> { return missing }

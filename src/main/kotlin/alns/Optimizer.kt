@@ -8,8 +8,8 @@ import java.io.File
 class Optimizer {
 
     private val data = Data()
-    private val qInsert = 1
-    private val qRemove = 1
+    private val qInsert = 50
+    private val qRemove = 10
     private val segmentSize = 100
     private val maxIterNum = 10
 
@@ -50,19 +50,11 @@ class Optimizer {
                 toRemove.forEach { if (!data.removeRequest(it)) error("Can't remove request") }
 
                 toRemove.forEach {
-                    val result = data.takeNotTrustedRequest(it)
-                    if (!result.first) {
-                        data.checkFeasibility()
-                        // printInterestingValues("While removal backtraking")
-                        error("Can't perform removal backtraking")
-                    }
+                    if (!data.takeNotTrustedRequest(it).first) error("Can't perform removal backtraking")
                 }
                 toRemove.forEach { if (!data.removeRequest(it)) error("Can't remove request") }
 
-                // printInterestingValues("Between insertion and removing")
-
                 val toInsert = insertingHeuristic.insertRequest(data, qInsert)
-                // printInterestingValues("After insertion")
 
                 val heuristicWeight: Double
                 val newObjValue = getCurrentObjectiveValue()
@@ -78,17 +70,9 @@ class Optimizer {
                         currentObjValue = newObjValue
                         heuristicWeight = heuristicsWheel.W3
                     } else { // backtracking
-                        // println("Backtraking?")
-                        // printInterestingValues("Before insertion backtraking")
                         toInsert.forEach { if(!data.removeRequest(it)) error("Can't perform insertion backtraking") }
-                        // printInterestingValues("Between insertion and removal backtraking")
                         toRemove.forEach {
-                            val result = data.takeNotTrustedRequest(it)
-                            if (!result.first) {
-                                data.checkFeasibility()
-                                // printInterestingValues("While removal backtraking")
-                                error("Can't perform removal backtraking")
-                            }
+                            if (!data.takeNotTrustedRequest(it).first) { error("Can't perform removal backtraking") }
                         }
                         heuristicWeight = heuristicsWheel.W4
                     }
@@ -101,14 +85,6 @@ class Optimizer {
         }
 
         output()
-    }
-
-    private fun printInterestingValues(description: String) {
-        println("\n______________ $description ____________")
-        println("${data.freeSeatsInActivity[0][0][0]} - ${data.freeSeatsInActivity[0][0][1]}")
-        println("${data.proxyDailyCapacity[0]}")
-        data.taken.forEach{println(it)}
-        println("______________")
     }
 
     private fun getCurrentObjectiveValue(): Double {

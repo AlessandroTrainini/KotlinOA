@@ -19,7 +19,6 @@ class BestStarting : StartingHeuristic {
             progressBar.updateProgressBar()
         }
 
-        data.checkFeasibility()
     }
 
     private fun locateRequest(r: Request) {
