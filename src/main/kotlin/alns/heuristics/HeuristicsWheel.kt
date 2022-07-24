@@ -26,14 +26,41 @@ class HeuristicsWheel {
     private var currentRem = -1
 
     init {
-//        addHeuristic(BestInserting(), W1)
-//        addHeuristic(BestRatioBestProxy(), W3)
-//        addHeuristic(BestRatioFirstProxy(), W1)
-//        addHeuristic(BestRatioRemoval(), W1)
-//        addHeuristic(RandomRemoval(), W2)
+        intensifyPhase()
+    }
 
+    fun firstPhase() {
+        clearWheel()
+        addHeuristic(BestRatioBestProxy(), W4)
+        addHeuristic(BestRatioFirstProxy(), W3)
+        addHeuristic(BestInserting(), W2)
+        addHeuristic(RandomInsertion(), W2)
+        addHeuristic(RandomRemoval(), W4)
+        addHeuristic(BestRatioRemoval(), W4)
+
+    }
+
+    fun destroyingPhase() {
+        clearWheel()
+        addHeuristic(RandomRemoval(), W3)
+        addHeuristic(RandomInsertion(), W3)
+    }
+
+    fun intensifyPhase() {
+        clearWheel()
+        addHeuristic(BestInserting(), W4)
+        addHeuristic(RandomInsertion(), W2)
         addHeuristic(RandomRemoval(), W2)
-        addHeuristic(RandomInsertion(), W4)
+        addHeuristic(BestRatioRemoval(), W2)
+    }
+
+    private fun clearWheel() {
+        currentIns = -1
+        currentRem = -1
+        insertingStorage.clear()
+        removalStorage.clear()
+        insertingWeight.clear()
+        removalWeight.clear()
     }
 
     private fun addHeuristic(h: Any, weight: Double) {
@@ -49,18 +76,6 @@ class HeuristicsWheel {
     fun updateWeight(w: Double) {
         insertingWeight[currentIns] = lambda * insertingWeight[currentIns] + (1 - lambda) * w
         removalWeight[currentRem] = lambda * removalWeight[currentRem] + (1 - lambda) * w
-    }
-
-    fun getBestInsHeuristic(): InsertingHeuristic {
-        currentIns = insertingWeight.indexOf(insertingWeight.max())
-        println("Ins heuristic: ${insertingStorage[currentIns].javaClass.name}")
-        return insertingStorage[currentIns]
-    }
-
-    fun getBestRemHeuristic(): RemovalHeuristic {
-        currentRem = removalWeight.indexOf(removalWeight.max())
-        println("Rem heuristic: ${removalStorage[currentRem].javaClass.name}")
-        return removalStorage[currentRem]
     }
 
     fun getInsHeuristic(): InsertingHeuristic {
