@@ -16,7 +16,6 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
 
         val result = if (activityIndex < timeIndex && activityIndex < dayIndex) { //it's better to change the activity
             tryAnotherActivityWithProxy(r) || tryAnotherDayWithProxy(r) || tryAnotherTimeWithProxy(r)
-
         } else if (timeIndex < activityIndex && timeIndex < dayIndex) { //it's better to change the time
             tryAnotherTimeWithProxy(r) || tryAnotherDayWithProxy(r) || tryAnotherActivityWithProxy(r)
         } else { //it's better to change the day

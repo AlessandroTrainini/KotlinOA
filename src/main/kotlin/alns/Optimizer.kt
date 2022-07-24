@@ -8,17 +8,17 @@ import java.io.File
 class Optimizer {
 
     private val data = Data()
-    private val qInsert = 50
-    private val qRemove = 10
     private val segmentSize = 100
-    private val maxIterNum = 10
+    private val maxIterNum = 20
+    private val qInsert = 100
 
-    private var t = 0
+    private val qRemove = 100
+    private var currentQRemove = qRemove
+    private var currentSegmentQRemove = currentQRemove
 
     private var currentObjValue: Double = 0.toDouble()
     private var maxObjValue: Double = 0.toDouble()
     private lateinit var maxTaken: List<Request>
-
 
 
     fun runInstance() {
@@ -35,18 +35,17 @@ class Optimizer {
         var insertingHeuristic: InsertingHeuristic
         var removalHeuristic: RemovalHeuristic
 
-        for (i in 1 until maxIterNum) {
+        for (i in 1 .. maxIterNum) {
             println("Segment n° $i")
 
             insertingHeuristic = heuristicsWheel.getInsHeuristic()
             removalHeuristic = heuristicsWheel.getRemHeuristic()
-
             val progressBar = ProgressBar(segmentSize)
-            for (j in 0 until segmentSize) { // Segment
-                progressBar.updateProgressBar()
+            val startTime = System.currentTimeMillis()
+            do { // Segment
+                progressBar.printProgressBar()
 
-                // printInterestingValues("Before removing")
-                val toRemove = removalHeuristic.removeRequest(data, qRemove)
+                val toRemove = removalHeuristic.removeRequest(data, currentSegmentQRemove)
                 toRemove.forEach { if (!data.removeRequest(it)) error("Can't remove request") }
 
                 toRemove.forEach {
@@ -65,26 +64,27 @@ class Optimizer {
                         maxTaken = data.taken.toList()
                         heuristicWeight = heuristicsWheel.W1
                     } else heuristicWeight = heuristicsWheel.W2 // Found better solution
+                    progressBar.decreaseIncrement()
                 } else { // the obj value was better before
-                    if (simulatedAnnealing(newObjValue)) {
-                        currentObjValue = newObjValue
-                        heuristicWeight = heuristicsWheel.W3
-                    } else { // backtracking
-                        toInsert.forEach { if(!data.removeRequest(it)) error("Can't perform insertion backtraking") }
-                        toRemove.forEach {
-                            if (!data.takeNotTrustedRequest(it).first) { error("Can't perform removal backtraking") }
-                        }
-                        heuristicWeight = heuristicsWheel.W4
+                    toInsert.forEach { if (!data.removeRequest(it)) error("Can't perform insertion backtraking") }
+                    toRemove.forEach {
+                        if (!data.takeNotTrustedRequest(it).first) error("Can't perform removal backtraking")
                     }
+                    heuristicWeight = heuristicsWheel.W4
+                    progressBar.increaseIncrement()
                 }
                 heuristicsWheel.updateWeight(heuristicWeight)
-                t += 10
-            }
-
-            println("End segment n° $i objective value: ${getCurrentObjectiveValue()}")
-        }
-
+                currentSegmentQRemove = (currentQRemove * (1 - progressBar.getPercentage().toDouble() / 100)).toInt()
+            } while (progressBar.updateAndCheck())
+            val endTime = System.currentTimeMillis()
+            progressBar.printProgressBar()
+            println("End segment n° $i (${(endTime - startTime)/1000}s) objective value: ${getCurrentObjectiveValue()}")
+            currentQRemove = (qRemove * (1 - i.toDouble() / maxIterNum)).toInt()
+        } // End search
+        data.checkFeasibility()
         output()
+
+
     }
 
     private fun getCurrentObjectiveValue(): Double {
@@ -98,27 +98,16 @@ class Optimizer {
         return value
     }
 
-    private fun simulatedAnnealing(newObjValue: Double): Boolean {
-//        val objValuesDifference = newObjValue - currentObjValue
-//        if (objValuesDifference < 0) {
-//            println("Absolute difference: $objValuesDifference")
-//            val exponent = -1 * objValuesDifference / t
-//            println("Exponent: $exponent")
-//            val exponential = exp(exponent)
-//            println("Exponential: $exponential")
-//        }
-        return false
-    }
-
-    operator fun Boolean.times(penaltyA: Double): Double {
-        return if (this) penaltyA else 0.toDouble()
-    }
-
     private fun output() {
+        println("Best objective value: $maxObjValue")
         File("out.txt").writeText("ID - Activity | def - Day | def - Time | def - Proxy | def - Gain - PenaltyA - PenaltyD - PenaltyT - Profit\n")
         maxTaken.forEach {
             File("out.txt").appendText(it.toString())
         }
+    }
+
+    operator fun Boolean.times(penaltyA: Double): Double {
+        return if (this) penaltyA else 0.toDouble()
     }
 }
 

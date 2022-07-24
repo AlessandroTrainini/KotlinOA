@@ -16,7 +16,7 @@ class BestStarting : StartingHeuristic {
         for (ir in data.instance.requests.sortedByDescending { it.gain }) {
             val r = Request(ir, false)
             locateRequest(r)
-            progressBar.updateProgressBar()
+            progressBar.updateAndPrintProgressBar()
         }
 
     }

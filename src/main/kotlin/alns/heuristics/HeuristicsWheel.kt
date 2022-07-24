@@ -20,19 +20,20 @@ class HeuristicsWheel {
     private val insertingWeight = mutableListOf<Double>()
     private val removalWeight = mutableListOf<Double>()
 
-    private val lambda = 0.3f
+    private val lambda = 0.6f
 
     private var currentIns = -1
     private var currentRem = -1
 
     init {
-        addHeuristic(BestInserting(), W1)
-        addHeuristic(BestRatioBestProxy(), W3)
-        addHeuristic(RandomInsertion(), W4)
-        addHeuristic(BestRatioFirstProxy(), W1)
+//        addHeuristic(BestInserting(), W1)
+//        addHeuristic(BestRatioBestProxy(), W3)
+//        addHeuristic(BestRatioFirstProxy(), W1)
+//        addHeuristic(BestRatioRemoval(), W1)
+//        addHeuristic(RandomRemoval(), W2)
 
-        addHeuristic(BestRatioRemoval(), W1)
         addHeuristic(RandomRemoval(), W2)
+        addHeuristic(RandomInsertion(), W4)
     }
 
     private fun addHeuristic(h: Any, weight: Double) {
@@ -75,7 +76,7 @@ class HeuristicsWheel {
         val index = getMostPromisingIndex(removalWeight)
         if (index != currentRem) {
             currentRem = index
-            println("Rem heuristic: ${removalStorage[currentRem].javaClass.name}")
+            println("Rem heuristic: ${removalStorage[currentRem].javaClass.canonicalName}")
         }
         return removalStorage[currentRem]
     }

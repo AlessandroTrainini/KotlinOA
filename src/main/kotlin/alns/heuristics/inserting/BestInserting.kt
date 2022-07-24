@@ -234,14 +234,17 @@ class BestInserting : InsertingHeuristic {
     private fun getIndexesList(a: Int, d: Int, t: Int): Array<List<Int>> {
         val activityList = data.activitiesOfCategory[data.instance.getCategoryByActivity(a)]
         activityList.remove(a)
+        activityList.shuffle()
         activityList.add(0, a)
 
         val timeList = (0 until data.instance.num_timeslots).toMutableList()
         timeList.remove(t)
+        timeList.shuffle()
         timeList.add(0, t)
 
         val dayList = (0 until data.instance.num_days).toMutableList()
         dayList.remove(d)
+        dayList.shuffle()
         dayList.add(0, d)
 
         return arrayOf(activityList.toList(), dayList.toList(), timeList.toList())
