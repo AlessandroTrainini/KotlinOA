@@ -48,7 +48,7 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
     }
 
     private fun tryAnotherDayWithProxy(r: Request): Boolean {
-        for (d in 0 until data.instance.num_days) {
+        for (d in (0 until data.instance.num_days).shuffled()) {
             if (data.proxyDailyCapacity[d] > 0) {
                 if (data.proxyRequestsInActivity[r.getA()][d][r.getT()] > 0) { //there is already a proxy in the activity
                     r.setDay(d)
@@ -67,7 +67,7 @@ class BestRatioBestProxy : BestRatioFirstProxy() {
     }
 
     private fun tryAnotherTimeWithProxy(r: Request): Boolean {
-        for (t in 0 until data.instance.num_timeslots) {
+        for (t in (0 until data.instance.num_timeslots).shuffled()) {
             if (data.proxyRequestsInActivity[r.getA()][r.getD()][t] > 0) { //is there already a proxy so the capacity won't grow
                 if (data.proxyDailyCapacity[r.getD()] > 0) { //proxy can take this request
                     r.setTime(t)

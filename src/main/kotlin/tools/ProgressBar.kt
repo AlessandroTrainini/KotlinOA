@@ -53,4 +53,16 @@ class ProgressBar(private val maxValue: Int) {
         }
     }
 
+    fun setCurrentValue(newValue: Int) {
+        currentValue = newValue
+    }
+
+    fun resetIncrement() {
+        currentIncrement = 1
+    }
+
+    fun getCurrentValue(): Int {
+        return currentValue
+    }
+
 }

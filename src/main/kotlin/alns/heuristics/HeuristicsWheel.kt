@@ -19,8 +19,9 @@ class HeuristicsWheel {
     private val removalStorage = mutableListOf<RemovalHeuristic>()
     private val insertingWeight = mutableListOf<Double>()
     private val removalWeight = mutableListOf<Double>()
+    private lateinit var callBack: () -> Unit
 
-    private val lambda = 0.6f
+    private val lambda = 0.999f
 
     private var currentIns = -1
     private var currentRem = -1
@@ -29,29 +30,25 @@ class HeuristicsWheel {
         intensifyPhase()
     }
 
-    fun firstPhase() {
-        clearWheel()
-        addHeuristic(BestRatioBestProxy(), W4)
-        addHeuristic(BestRatioFirstProxy(), W3)
-        addHeuristic(BestInserting(), W2)
-        addHeuristic(RandomInsertion(), W2)
-        addHeuristic(RandomRemoval(), W4)
-        addHeuristic(BestRatioRemoval(), W4)
-
-    }
-
     fun destroyingPhase() {
         clearWheel()
         addHeuristic(RandomRemoval(), W3)
         addHeuristic(RandomInsertion(), W3)
+        callBack = {destroyingPhase()}
     }
 
     fun intensifyPhase() {
         clearWheel()
-        addHeuristic(BestInserting(), W4)
-        addHeuristic(RandomInsertion(), W2)
+        addHeuristic(BestInserting(), W2)
+        addHeuristic(RandomInsertion(), W4)
         addHeuristic(RandomRemoval(), W2)
         addHeuristic(BestRatioRemoval(), W2)
+        addHeuristic(BestRatioFirstProxy(), W2)
+        callBack = {intensifyPhase()}
+    }
+
+    fun resetWeight() {
+        callBack
     }
 
     private fun clearWheel() {
@@ -82,7 +79,7 @@ class HeuristicsWheel {
         val index = getMostPromisingIndex(insertingWeight)
         if (index != currentIns) {
             currentIns = index
-            println("Ins heuristic: ${insertingStorage[currentIns].javaClass.name}")
+            // println("Ins heuristic: ${insertingStorage[currentIns].javaClass.name}")
         }
         return insertingStorage[currentIns]
     }
@@ -91,7 +88,7 @@ class HeuristicsWheel {
         val index = getMostPromisingIndex(removalWeight)
         if (index != currentRem) {
             currentRem = index
-            println("Rem heuristic: ${removalStorage[currentRem].javaClass.canonicalName}")
+            // println("Rem heuristic: ${removalStorage[currentRem].javaClass.canonicalName}")
         }
         return removalStorage[currentRem]
     }

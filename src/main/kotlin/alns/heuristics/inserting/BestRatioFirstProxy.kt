@@ -39,14 +39,17 @@ open class BestRatioFirstProxy : InsertingHeuristic {
     open fun trySomewhereElseWithProxy(candidate: InstanceRequest, data: Data) {
         val activityList = data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)]
         activityList.remove(candidate.activity)
+        activityList.shuffle()
         activityList.add(0, candidate.activity)
 
         val timeList = (0 until data.instance.num_timeslots).toMutableList()
         timeList.remove(candidate.timeslot)
+        timeList.shuffle()
         timeList.add(0, candidate.timeslot)
 
         val dayList = (0 until data.instance.num_days).toMutableList()
         dayList.remove(candidate.day)
+        dayList.shuffle()
         dayList.add(0, candidate.day)
 
         for (a in activityList)
@@ -72,9 +75,9 @@ open class BestRatioFirstProxy : InsertingHeuristic {
     }
 
     open fun trySomewhereElseWithoutProxy(candidate: InstanceRequest, data: Data) {
-        for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)])
-            for (t in 0 until data.instance.num_timeslots)
-                for (d in 0 until data.instance.num_days) {
+        for (a in data.activitiesOfCategory[data.instance.getCategoryByActivity(candidate.activity)].shuffled())
+            for (t in (0 until data.instance.num_timeslots).shuffled())
+                for (d in (0 until data.instance.num_days).shuffled()) {
                     val r = Request(candidate, false, d, t, a)
                     if (data.freeSeatsInActivity[a][d][t] >= 1 && data.takeNotTrustedRequest(r).first) {  //in this case there is enough space, and proxy can take the request
                         insertionList.add(r)
